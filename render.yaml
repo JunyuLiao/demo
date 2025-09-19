@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: highdim-rm-demo
+    env: python
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: python web_app_simple.py
+    envVars:
+      - key: PORT
+        value: 10000
