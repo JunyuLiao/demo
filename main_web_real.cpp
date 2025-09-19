@@ -52,6 +52,22 @@ int main(int argc, char *argv[]){
     printf("=== High-Dimensional Regret Minimization Algorithm (Real) ===\n");
     printf("Loading dataset: %s\n", input);
     
+    // Debug: Check if file exists
+    FILE* test_fp = fopen(input, "r");
+    if (test_fp == NULL) {
+        printf("ERROR: Cannot open file %s\n", input);
+        printf("Current working directory: ");
+        system("pwd");
+        printf("Files in current directory: ");
+        system("ls -la");
+        printf("Files in datasets directory: ");
+        system("ls -la datasets/");
+        exit(1);
+    } else {
+        printf("File %s opened successfully\n", input);
+        fclose(test_fp);
+    }
+    
     point_set_t* P_raw = read_points(input);
     if (!P_raw) {
         printf("Error: Could not load dataset %s\n", input);
