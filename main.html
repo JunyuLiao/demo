@@ -1200,10 +1200,12 @@
             showLoading();
             
             // Check if we're on GitHub Pages (static) or local Flask
+            console.log('Current hostname:', window.location.hostname);
             if (window.location.hostname.includes('github.io')) {
                 // GitHub Pages - use demo data
                 console.log('Running on GitHub Pages - using demo data');
                 setTimeout(() => {
+                    console.log('Starting demo algorithm...');
                     setStatus('running');
                     startDemoAlgorithm();
                 }, 2000);
@@ -1241,6 +1243,9 @@
 
         function showQuestion() {
             console.log('showQuestion called, currentQuestionIndex:', currentQuestionIndex);
+            console.log('demoQuestions length:', demoQuestions.length);
+            console.log('demoQuestions:', demoQuestions);
+            
             if (currentQuestionIndex >= demoQuestions.length) {
                 console.log('All questions completed, showing final recommendations');
                 showFinalRecommendations();
@@ -1375,7 +1380,9 @@
         }
 
         function startDemoAlgorithm() {
+            console.log('startDemoAlgorithm called');
             currentQuestionIndex = 0;
+            console.log('currentQuestionIndex set to:', currentQuestionIndex);
             showQuestion();
         }
         
