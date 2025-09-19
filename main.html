@@ -1181,12 +1181,13 @@
         let questionsAnswered = 0;
 
         function startAlgorithm() {
-            console.log('Starting demo algorithm...');
+            const dataset = 'datasets/car.txt';
+            
+            console.log('Starting algorithm with dataset:', dataset);
             
             // Reset question counter for new algorithm
             lastQuestionCount = 0;
             actualAnsweredCount = 0; // Reset manual counter
-            currentQuestionIndex = 0; // Reset question index
             const counterElement = document.getElementById('questionsCounter');
             if (counterElement) {
                 counterElement.textContent = '0';
@@ -1196,13 +1197,46 @@
             questionSection.classList.add('hidden');
             finalRecommendations.classList.add('hidden');
             loadingSection.classList.add('hidden');
-            showLoading('Initializing algorithm...');
+            showLoading();
             
-            // Simulate algorithm initialization
-            setTimeout(() => {
-                setStatus('running');
-                showQuestion();
-            }, 2000);
+            // Check if we're on GitHub Pages (static) or local Flask
+            if (window.location.hostname.includes('github.io')) {
+                // GitHub Pages - use demo data
+                console.log('Running on GitHub Pages - using demo data');
+                setTimeout(() => {
+                    setStatus('running');
+                    startDemoAlgorithm();
+                }, 2000);
+            } else {
+                // Local Flask - use API calls
+                console.log('Running locally - using Flask API');
+                fetch('/start_algorithm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ dataset: dataset, use_real: true })
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        setStatus('running');
+                        startPolling();
+                        console.log('Algorithm started successfully, polling started');
+                    } else {
+                        console.error('Algorithm start failed:', data.message);
+                        alert('Failed to start algorithm: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting algorithm:', error);
+                    alert('Error starting algorithm: ' + error.message);
+                });
+            }
         }
 
         function showQuestion() {
@@ -1276,6 +1310,44 @@
             
             console.log('Sending input:', input);
             
+            // Check if we're on GitHub Pages (static) or local Flask
+            if (window.location.hostname.includes('github.io')) {
+                // GitHub Pages - process locally
+                processDemoInput(input);
+            } else {
+                // Local Flask - use API calls
+                fetch('/send_input', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input: input })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        userInput.value = '';
+                        
+                        // Only increment the counter if it's not a stop command (-99)
+                        if (input !== '-99') {
+                            actualAnsweredCount++;
+                            const counterElement = document.getElementById('questionsCounter');
+                            if (counterElement) {
+                                counterElement.textContent = actualAnsweredCount;
+                            }
+                        }
+                        
+                        // Show loading while processing next question
+                        showLoading();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending input:', error);
+                });
+            }
+        }
+
+        function processDemoInput(input) {
             // Only increment the counter if it's not a stop command (-99)
             if (input !== '-99') {
                 actualAnsweredCount++;
@@ -1300,6 +1372,11 @@
             } else {
                 alert('Please enter 1, 2, or 0 to skip');
             }
+        }
+
+        function startDemoAlgorithm() {
+            currentQuestionIndex = 0;
+            showQuestion();
         }
         
         
