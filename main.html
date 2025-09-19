@@ -1149,7 +1149,7 @@
             }
         ];
 
-        const finalRecommendations = [
+        const demoFinalRecommendations = [
             {
                 id: 1,
                 dimensions: {
@@ -1277,7 +1277,7 @@
             const recommendationsContainer = document.getElementById('recommendationsContainer');
             recommendationsContainer.innerHTML = '';
             
-            finalRecommendations.forEach((rec, index) => {
+            demoFinalRecommendations.forEach((rec, index) => {
                 const recCard = document.createElement('div');
                 recCard.className = 'recommendation-card';
                 recCard.style.cssText = `
