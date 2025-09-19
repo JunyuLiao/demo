@@ -6,7 +6,16 @@ LIBRARY_PATH = /opt/local/lib
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
     CXX = g++
-    INCLUDE_PATH = /usr/include
+    # Try different GLPK locations on Linux
+    ifeq ($(wildcard /usr/include/glpk.h),)
+        ifeq ($(wildcard /usr/local/include/glpk.h),)
+            INCLUDE_PATH = /usr/include
+        else
+            INCLUDE_PATH = /usr/local/include
+        endif
+    else
+        INCLUDE_PATH = /usr/include
+    endif
     LIBRARY_PATH = /usr/lib
 else
     CXX = clang++
