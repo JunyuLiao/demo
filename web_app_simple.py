@@ -267,6 +267,9 @@ if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('static', exist_ok=True)
     
+    # Get port from environment variable (for Railway/Heroku)
+    port = int(os.environ.get('PORT', 5001))
+    
     print("Starting simple web application...")
-    print("Open your browser and go to: http://localhost:5001")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    print(f"Open your browser and go to: http://localhost:{port}")
+    app.run(debug=False, host='0.0.0.0', port=port)
