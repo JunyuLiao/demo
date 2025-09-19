@@ -12,11 +12,12 @@ ifeq ($(UNAME_S),Linux)
             INCLUDE_PATH = /usr/include
         else
             INCLUDE_PATH = /usr/local/include
+            LIBRARY_PATH = /usr/local/lib
         endif
     else
         INCLUDE_PATH = /usr/include
+        LIBRARY_PATH = /usr/lib
     endif
-    LIBRARY_PATH = /usr/lib
 else
     CXX = clang++
     INCLUDE_PATH = /opt/local/include
