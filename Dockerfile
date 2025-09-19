@@ -41,11 +41,22 @@ RUN pip3 install -r requirements.txt
 # Copy source code
 COPY . .
 
-# Debug: Check if dataset file exists
-RUN echo "Checking dataset file..." && \
-    ls -la datasets/ && \
-    ls -la datasets/car.txt && \
-    echo "Dataset file check completed"
+# Debug: Check what was copied
+RUN echo "Checking copied files..." && \
+    ls -la && \
+    echo "Checking if datasets directory exists..." && \
+    if [ -d "datasets" ]; then \
+        echo "datasets directory exists" && \
+        ls -la datasets/ && \
+        if [ -f "datasets/car.txt" ]; then \
+            echo "car.txt exists" && \
+            ls -la datasets/car.txt; \
+        else \
+            echo "car.txt does not exist"; \
+        fi; \
+    else \
+        echo "datasets directory does not exist"; \
+    fi
 
 # Build the C++ algorithm
 RUN make web-real
