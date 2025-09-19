@@ -794,10 +794,9 @@
                 optionCard.onclick = () => selectOption(index);
                 
                 let dimensionsHtml = '';
-                option.values.forEach((value, dimIndex) => {
-                    const dimLabel = option.dimensions[dimIndex] || dimIndex;
-                    // Use actual dimension name from mapping
-                    const displayLabel = getDimensionName(dimLabel);
+                // Handle demo data structure: option.dimensions is an object
+                Object.entries(option.dimensions).forEach(([dimName, value]) => {
+                    const displayLabel = getDimensionName(dimName);
                     dimensionsHtml += `
                         <div class="dimension-item">
                             <div class="dimension-label">${displayLabel}:</div>
