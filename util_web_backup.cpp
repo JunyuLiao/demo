@@ -27,26 +27,16 @@ int show_to_user(point_set_t* P_raw, point_set_t* S, std::set<int> selected_dime
     printf("Your choice (0 for not interested): ");
     fflush(stdout);  // Force output to be sent immediately
     
-    // Fixed input handling for web interface
+    // For web interface, we need to wait for user input
     int maxIdx = -1;
-    int result = 0;
     
-    // Try to read input with proper error handling
-    do {
-        result = scanf("%d", &maxIdx);
-        if (result != 1) {
-            // Input reading failed, clear buffer and try again
-            int c;
-            while ((c = getchar()) != '\n' && c != EOF);
-            maxIdx = -1;
-        }
-        fflush(stdin);  // Clear input buffer
-    } while (maxIdx != 0 && maxIdx != 1 && maxIdx != 2 && maxIdx != -99);
+    // // Use scanf like the regular version to properly wait for input
+    // scanf("%d", &maxIdx);
     
-    // Debug output
-    printf("Received input: %d\n", maxIdx);
-    fflush(stdout);
-    
+    // return maxIdx==0 ? -1 : maxIdx-1;
+    while (maxIdx != 0 && maxIdx != 1 && maxIdx != 2 && maxIdx != -99){
+        scanf("%d", &maxIdx);
+    }
     return maxIdx==-99 ? -99 : maxIdx-1;
 }
 
