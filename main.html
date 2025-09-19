@@ -1061,87 +1061,150 @@
         
         
         // Demo data for the algorithm simulation
+        // Realistic demo data that simulates the real algorithm behavior
+        // Each question has different dimensions, just like the real algorithm
         const demoQuestions = [
+            // Question 1: Dimensions 0-6 (Model Year, Production, etc.)
             {
                 options: [
                     {
                         id: 1,
                         dimensions: {
-                            "Model Year": 2014.000,
-                            "Production (000)": 370.000,
-                            "Production Share": 0.024,
-                            "2-Cycle MPG": 29.178,
-                            "Real-World MPG": 23.051,
-                            "Real-World MPG_City": 19.448,
-                            "Real-World MPG_Hwy": 26.796
+                            "Model Year": 2012.000,
+                            "Production (000)": 2771.000,
+                            "Production Share": 0.206,
+                            "2-Cycle MPG": 25.125,
+                            "Real-World MPG": 20.007,
+                            "Real-World MPG_City": 17.063,
+                            "Real-World MPG_Hwy": 23.000
                         }
                     },
                     {
                         id: 2,
                         dimensions: {
-                            "Model Year": 2018.000,
-                            "Production (000)": 167.000,
-                            "Production Share": 0.010,
-                            "2-Cycle MPG": 32.677,
-                            "Real-World MPG": 25.859,
-                            "Real-World MPG_City": 21.587,
-                            "Real-World MPG_Hwy": 30.397
+                            "Model Year": 1984.000,
+                            "Production (000)": 964.000,
+                            "Production Share": 0.070,
+                            "2-Cycle MPG": 18.759,
+                            "Real-World MPG": 15.961,
+                            "Real-World MPG_City": 14.856,
+                            "Real-World MPG_Hwy": 17.557
                         }
                     }
                 ]
             },
+            // Question 2: Different dimensions 7-13 (Engine specs, etc.)
             {
                 options: [
                     {
                         id: 1,
                         dimensions: {
-                            "Model Year": 2016.000,
-                            "Production (000)": 245.000,
-                            "Production Share": 0.015,
-                            "2-Cycle MPG": 31.200,
-                            "Real-World MPG": 24.500,
-                            "Real-World MPG_City": 20.800,
-                            "Real-World MPG_Hwy": 28.200
+                            "Engine Displacement": 384.442,
+                            "Engine Power": 451.811,
+                            "Engine Torque": 321.510,
+                            "Weight": 3296.772,
+                            "Hybrid": 0.000,
+                            "Acceleration": 167.188,
+                            "Top Speed": 154.576
                         }
                     },
                     {
                         id: 2,
                         dimensions: {
-                            "Model Year": 2019.000,
-                            "Production (000)": 189.000,
-                            "Production Share": 0.012,
-                            "2-Cycle MPG": 33.100,
-                            "Real-World MPG": 26.200,
-                            "Real-World MPG_City": 22.100,
-                            "Real-World MPG_Hwy": 30.300
+                            "Engine Displacement": 456.904,
+                            "Engine Power": 534.239,
+                            "Engine Torque": 394.317,
+                            "Weight": 3950.932,
+                            "Hybrid": 0.000,
+                            "Acceleration": 203.415,
+                            "Top Speed": 195.482
                         }
                     }
                 ]
             },
+            // Question 3: Different dimensions 14-20 (Fuel economy, etc.)
             {
                 options: [
                     {
                         id: 1,
                         dimensions: {
-                            "Model Year": 2015.000,
-                            "Production (000)": 312.000,
-                            "Production Share": 0.020,
-                            "2-Cycle MPG": 28.500,
-                            "Real-World MPG": 22.800,
-                            "Real-World MPG_City": 19.200,
-                            "Real-World MPG_Hwy": 26.400
+                            "City MPG": 18.500,
+                            "Highway MPG": 25.200,
+                            "Combined MPG": 21.200,
+                            "Fuel Capacity": 15.800,
+                            "Range": 320.000,
+                            "CO2 Emissions": 285.500,
+                            "Fuel Type": 1.000
                         }
                     },
                     {
                         id: 2,
                         dimensions: {
-                            "Model Year": 2020.000,
-                            "Production (000)": 156.000,
-                            "Production Share": 0.010,
-                            "2-Cycle MPG": 34.800,
-                            "Real-World MPG": 27.500,
-                            "Real-World MPG_Hwy": 31.200,
-                            "Real-World MPG_City": 23.800
+                            "City MPG": 22.300,
+                            "Highway MPG": 28.700,
+                            "Combined MPG": 25.000,
+                            "Fuel Capacity": 14.200,
+                            "Range": 355.000,
+                            "CO2 Emissions": 245.800,
+                            "Fuel Type": 1.000
+                        }
+                    }
+                ]
+            },
+            // Question 4: Different dimensions 21-27 (Safety, features, etc.)
+            {
+                options: [
+                    {
+                        id: 1,
+                        dimensions: {
+                            "Safety Rating": 4.500,
+                            "Airbags": 6.000,
+                            "ABS": 1.000,
+                            "Traction Control": 1.000,
+                            "Stability Control": 1.000,
+                            "Bluetooth": 1.000,
+                            "Navigation": 0.000
+                        }
+                    },
+                    {
+                        id: 2,
+                        dimensions: {
+                            "Safety Rating": 5.000,
+                            "Airbags": 8.000,
+                            "ABS": 1.000,
+                            "Traction Control": 1.000,
+                            "Stability Control": 1.000,
+                            "Bluetooth": 1.000,
+                            "Navigation": 1.000
+                        }
+                    }
+                ]
+            },
+            // Question 5: Different dimensions 28-34 (Comfort, luxury, etc.)
+            {
+                options: [
+                    {
+                        id: 1,
+                        dimensions: {
+                            "Seating Capacity": 5.000,
+                            "Cargo Space": 12.500,
+                            "Sunroof": 0.000,
+                            "Leather Seats": 0.000,
+                            "Heated Seats": 0.000,
+                            "Climate Control": 1.000,
+                            "Premium Audio": 0.000
+                        }
+                    },
+                    {
+                        id: 2,
+                        dimensions: {
+                            "Seating Capacity": 7.000,
+                            "Cargo Space": 18.200,
+                            "Sunroof": 1.000,
+                            "Leather Seats": 1.000,
+                            "Heated Seats": 1.000,
+                            "Climate Control": 1.000,
+                            "Premium Audio": 1.000
                         }
                     }
                 ]
@@ -1383,6 +1446,7 @@
 
         function startDemoAlgorithm() {
             console.log('startDemoAlgorithm called');
+            console.log('Note: This is a simulation for GitHub Pages. The real algorithm runs locally with Flask backend.');
             currentQuestionIndex = 0;
             console.log('currentQuestionIndex set to:', currentQuestionIndex);
             showQuestion();
