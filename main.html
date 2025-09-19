@@ -944,7 +944,7 @@
         }
         
         function getDimensionName(dimensionId) {
-            return dimensionMap[dimensionId] || `Dimension ${dimensionId}`;
+            return dimensionMap[dimensionId] || dimensionId;
         }
         
         function simpleHash(str) {
