@@ -2,8 +2,17 @@
 INCLUDE_PATH = /opt/local/include
 LIBRARY_PATH = /opt/local/lib
 
-# Compiler
-CXX = clang++
+# Compiler - use g++ for Railway, clang++ for local
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    CXX = g++
+    INCLUDE_PATH = /usr/include
+    LIBRARY_PATH = /usr/lib
+else
+    CXX = clang++
+    INCLUDE_PATH = /opt/local/include
+    LIBRARY_PATH = /opt/local/lib
+endif
 
 # Compiler flags
 CXXFLAGS = -w -I$(INCLUDE_PATH)
