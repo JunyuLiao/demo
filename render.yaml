@@ -2,7 +2,11 @@ services:
   - type: web
     name: highdim-rm-demo
     env: python
-    buildCommand: chmod +x build.sh && ./build.sh
+    buildCommand: |
+      apt-get update
+      apt-get install -y build-essential libglpk-dev
+      pip install -r requirements.txt
+      make web-real
     startCommand: python web_app_simple.py
     envVars:
       - key: PORT

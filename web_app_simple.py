@@ -30,15 +30,37 @@ class AlgorithmRunner:
         self.output_lines = []
         
     def start_algorithm(self, dataset_path="datasets/car.txt", use_real=False):
-        """Start the C++ algorithm process"""
+        """Start the C++ algorithm process with fallback to mock"""
         try:
-            # Always build the algorithm to ensure correct version
+            # Try to build the real algorithm first
             print("Building algorithm (real version)...")
             result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
             if result.returncode != 0:
-                return False, f"Build failed: {result.stderr}"
+                print(f"Real algorithm build failed: {result.stderr}")
+                print("Falling back to mock algorithm...")
+                
+                # Fallback to mock algorithm
+                self.process = subprocess.Popen(
+                    ["python3", "mock_algorithm.py", dataset_path],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True
+                )
+                
+                self.is_running = True
+                self.output_lines = []
+                
+                # Start output reading thread
+                threading.Thread(target=self._read_output, daemon=True).start()
+                
+                return True, "Mock algorithm started (real algorithm build failed)"
             
-            # Start the algorithm process with the specified dataset
+            print("Real algorithm built successfully")
+            
+            # Start the real algorithm process
             self.process = subprocess.Popen(
                 ["./run_web", dataset_path],
                 stdin=subprocess.PIPE,
@@ -55,10 +77,33 @@ class AlgorithmRunner:
             # Start output reading thread
             threading.Thread(target=self._read_output, daemon=True).start()
             
-            return True, "Algorithm started successfully"
+            return True, "Real algorithm started successfully"
             
         except Exception as e:
-            return False, f"Failed to start algorithm: {str(e)}"
+            print(f"Real algorithm failed: {str(e)}")
+            print("Falling back to mock algorithm...")
+            
+            try:
+                # Fallback to mock algorithm
+                self.process = subprocess.Popen(
+                    ["python3", "mock_algorithm.py", dataset_path],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True
+                )
+                
+                self.is_running = True
+                self.output_lines = []
+                
+                # Start output reading thread
+                threading.Thread(target=self._read_output, daemon=True).start()
+                
+                return True, "Mock algorithm started (real algorithm failed)"
+            except Exception as e2:
+                return False, f"Failed to start both real and mock algorithms: {str(e2)}"
     
     def _read_output(self):
         """Read output from the algorithm process"""
