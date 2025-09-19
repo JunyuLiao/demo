@@ -1,4 +1,4 @@
-﻿#include "maxUtility.h"
+#include "maxUtility.h"
 #include <iostream>
 #include <string>
 
@@ -245,23 +245,24 @@ void update_ext_vec(point_set_t* P_raw, std::set<int> set_final_dimensions, poin
     fflush(stdout);  // Force output to be sent immediately
 
 	int max_i = -1;
+    int result = 0;
     
-    // // Use web-compatible input method
-    // std::string input;
-    // if (std::getline(std::cin, input)) {
-    //     try {
-    //         max_i = std::stoi(input);
-    //     } catch (const std::exception& e) {
-    //         printf("Invalid input, defaulting to 0\n");
-    //         max_i = 0;
-    //     }
-    // } else {
-    //     printf("No input received, defaulting to 0\n");
-    //     max_i = 0;
-    // }
-	while (max_i != 0 && max_i != 1 && max_i != 2 && max_i != -99){
-        scanf("%d", &max_i);
-    }
+    // Fixed input handling for web interface - same fix as util_web.cpp
+    do {
+        result = scanf("%d", &max_i);
+        if (result != 1) {
+            // Input reading failed, clear buffer and try again
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            max_i = -1;
+        }
+        fflush(stdin);  // Clear input buffer
+    } while (max_i != 0 && max_i != 1 && max_i != 2 && max_i != -99);
+    
+    // Debug output
+    printf("Received input: %d\n", max_i);
+    fflush(stdout);
+    
 	if (max_i == -99) {
 		keep_answer = false;
 		return;
@@ -500,7 +501,7 @@ point_t* max_utility(point_set_t* P_raw, std::set<int> set_final_dimensions, poi
 //     {
 //         Qcount++;
 //         sort(C_idx.begin(), C_idx.end()); // prevent select two different points after different skyline algorithms
-        
+		
 //         // generate the options for user selection and update the extreme vecotrs based on the user feedback
 //         update_ext_vec(P_raw, set_final_dimensions, P, C_idx, u, s, ext_vec, current_best_idx, last_best, frame, cmp_option);
 
