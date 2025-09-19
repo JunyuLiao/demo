@@ -1,5 +1,7 @@
 #include "attribute_subset.h"
 #include <iostream>
+#include <algorithm>
+#include <iterator>
 using namespace std;
 
 

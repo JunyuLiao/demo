@@ -1,4 +1,6 @@
 #include "highdim.h"
+#include <algorithm>
+#include <iterator>
 
 
 highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, int size, int d_bar, int d_hat, int d_hat_2, point_t* u, int K, int s, double epsilon, int maxRound, double& Qcount, double& Csize, int cmp_option, int stop_option, int prune_option, int dom_option, int& num_questions){
