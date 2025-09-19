@@ -1304,7 +1304,10 @@
                 recommendationsContainer.appendChild(recCard);
             });
             
-            showFinalRecommendationsSection();
+            // Show the final recommendations section
+            questionSection.classList.add('hidden');
+            finalRecommendations.classList.remove('hidden');
+            loadingSection.classList.add('hidden');
         }
         
         
