@@ -1200,7 +1200,6 @@
             
             // Simulate algorithm initialization
             setTimeout(() => {
-                isRunning = true;
                 setStatus('running');
                 showQuestion();
             }, 2000);
@@ -1220,80 +1219,6 @@
             showQuestionSection();
         }
 
-        function displayOptions(options) {
-            console.log('displayOptions called with:', options);
-            optionsContainer.innerHTML = '';
-            
-            options.forEach((option, index) => {
-                const optionCard = document.createElement('div');
-                optionCard.className = 'option-card';
-                optionCard.onclick = () => selectOption(index);
-                
-                let dimensionsHtml = '';
-                Object.entries(option.dimensions).forEach(([dimName, value]) => {
-                    dimensionsHtml += `
-                        <div class="dimension-item">
-                            <div class="dimension-label">${getDimensionName(dimName)}:</div>
-                            <div class="dimension-value">${value.toFixed(3)}</div>
-                        </div>
-                    `;
-                });
-                
-                optionCard.innerHTML = `
-                    <div class="option-header">
-                        <div class="option-name">Option ${option.id}</div>
-                        <div class="option-id">${option.id}</div>
-                    </div>
-                    <div class="dimensions-grid">
-                        ${dimensionsHtml}
-                    </div>
-                `;
-                
-                optionsContainer.appendChild(optionCard);
-            });
-        }
-
-        function selectOption(index) {
-            // Remove previous selection
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
-            // Add selection to clicked card
-            document.querySelectorAll('.option-card')[index].classList.add('selected');
-            
-            // Auto-submit after selection
-            setTimeout(() => {
-                submitChoice(index + 1);
-            }, 500);
-        }
-
-        function submitChoice(choice = null) {
-            if (!isRunning) return;
-            
-            const input = choice || userInput.value.trim();
-            
-            if (input === '0') {
-                // Skip question
-                questionsAnswered++;
-                        actualAnsweredCount++;
-                updateQuestionsCount();
-                nextQuestion();
-                return;
-            }
-            
-            if (input === '1' || input === '2') {
-                questionsAnswered++;
-                actualAnsweredCount++;
-                updateQuestionsCount();
-                nextQuestion();
-            } else {
-                alert('Please enter 1, 2, or 0 to skip');
-            }
-            
-            userInput.value = '';
-        }
-
         function nextQuestion() {
             currentQuestionIndex++;
             
@@ -1308,7 +1233,6 @@
         }
 
         function showFinalRecommendations() {
-            isRunning = false;
             setStatus('stopped');
             
             const recommendationsContainer = document.getElementById('recommendationsContainer');
@@ -1351,7 +1275,31 @@
             if (!input) return;
             
             console.log('Sending input:', input);
-            submitChoice(input);
+            
+            // Only increment the counter if it's not a stop command (-99)
+            if (input !== '-99') {
+                actualAnsweredCount++;
+                const counterElement = document.getElementById('questionsCounter');
+                if (counterElement) {
+                    counterElement.textContent = actualAnsweredCount;
+                }
+            }
+            
+            userInput.value = '';
+            
+            // Process the input
+            if (input === '0') {
+                // Skip question
+                nextQuestion();
+            } else if (input === '1' || input === '2') {
+                // Answer question
+                nextQuestion();
+            } else if (input === '-99') {
+                // Stop early
+                showFinalRecommendations();
+            } else {
+                alert('Please enter 1, 2, or 0 to skip');
+            }
         }
         
         
