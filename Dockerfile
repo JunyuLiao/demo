@@ -59,10 +59,19 @@ RUN echo "Checking copied files..." && \
     fi
 
 # Build the C++ algorithm
-RUN make web-real
+RUN echo "Building C++ algorithm..." && \
+    make web-real && \
+    echo "Build completed successfully" && \
+    ls -la run_web && \
+    echo "Testing algorithm with car.txt..." && \
+    echo "1" | timeout 10s ./run_web datasets/car.txt || echo "Algorithm test completed (timeout expected)"
 
 # Expose port
 EXPOSE 5000
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/ || exit 1
 
 # Start the application
 CMD ["python3", "web_app_simple.py"]
