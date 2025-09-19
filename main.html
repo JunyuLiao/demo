@@ -1179,7 +1179,6 @@
         // State variables for demo
         let currentQuestionIndex = 0;
         let questionsAnswered = 0;
-        let isRunning = false;
 
         function startAlgorithm() {
             console.log('Starting demo algorithm...');
@@ -1187,6 +1186,7 @@
             // Reset question counter for new algorithm
             lastQuestionCount = 0;
             actualAnsweredCount = 0; // Reset manual counter
+            currentQuestionIndex = 0; // Reset question index
             const counterElement = document.getElementById('questionsCounter');
             if (counterElement) {
                 counterElement.textContent = '0';
@@ -1200,23 +1200,28 @@
             
             // Simulate algorithm initialization
             setTimeout(() => {
-                    setStatus('running');
+                isRunning = true;
+                setStatus('running');
                 showQuestion();
             }, 2000);
         }
 
         function showQuestion() {
+            console.log('showQuestion called, currentQuestionIndex:', currentQuestionIndex);
             if (currentQuestionIndex >= demoQuestions.length) {
+                console.log('All questions completed, showing final recommendations');
                 showFinalRecommendations();
                 return;
             }
 
             const question = demoQuestions[currentQuestionIndex];
+            console.log('Showing question:', question);
             displayOptions(question.options);
             showQuestionSection();
         }
 
         function displayOptions(options) {
+            console.log('displayOptions called with:', options);
             optionsContainer.innerHTML = '';
             
             options.forEach((option, index) => {
