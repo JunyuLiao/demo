@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Study - High-Dimensional Regret Minimization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .consent-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .study-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .study-info h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .study-info p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .study-info ul {
+            color: #666;
+            line-height: 1.6;
+            margin-left: 20px;
+        }
+
+        .study-info li {
+            margin-bottom: 8px;
+        }
+
+        .acknowledgment {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .acknowledgment h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .acknowledgment p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .privacy-notice {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .privacy-notice h3 {
+            color: #0c5460;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .privacy-notice p {
+            color: #0c5460;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #155724;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .instructions ol {
+            color: #155724;
+            line-height: 1.6;
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .start-button:active {
+            transform: translateY(0);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .consent-container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="consent-container">
+        <div class="header">
+            <h1>High-Dimensional Regret Minimization</h1>
+            <p>an interactive system for finding your favorite option among a large database</p>
+        </div>
+        
+        <div class="content">
+            <div class="study-info">
+                <h2>User Study Information</h2>
+                <p>You are invited to participate in a research study to evaluate the effectiveness of our interactive recommendation algorithm. This study aims to understand how users interact with high-dimensional preference learning systems.</p>
+                
+                <p><strong>What you will do:</strong></p>
+                <ul>
+                    <li>Use an interactive algorithm to find your preferred options from a database of cars</li>
+                    <li>Answer a number of questions by choosing between two options</li>
+                    <li>Rate the performance of the algorithm</li>
+                    <li>The process typically takes less than 3 minutes depending on your preferences</li>
+                </ul>
+            </div>
+            
+            <div class="acknowledgment">
+                <h3>Your Participation</h3>
+                <p><strong>Voluntary Participation:</strong> Your participation in this study is completely voluntary. You may withdraw at any time without penalty.</p>
+                <p><strong>No Personal Information:</strong> We do not collect any personal information that could identify you. Your responses are anonymous.</p>
+                <p><strong>Research Purpose:</strong> The data collected will be used solely for research purposes to improve interactive decision-making algorithms.</p>
+            </div>
+            
+            <div class="privacy-notice">
+                <h3>Privacy & Data Protection</h3>
+                <p><strong>No Data Storage:</strong> Your responses are not saved or stored on our servers. All data is processed locally in your browser.</p>
+                <p><strong>Anonymous Usage:</strong> We only collect anonymous usage statistics (such as number of questions answered) for research analysis.</p>
+                <p><strong>Secure Connection:</strong> All communication is encrypted and secure.</p>
+            </div>
+            
+            <div class="instructions">
+                <h3>How to Participate</h3>
+                <ol>
+                    <li>Click "Agree and Start" to begin the study</li>
+                    <li>You will see two car options with different specifications</li>
+                    <li>Choose the option you prefer by clicking on it or entering your choice</li>
+                    <li>Continue answering questions until the algorithm finds your preferred options</li>
+                    <li>You can stop early at any time using the "Stop & Get Results" button</li>
+                    <li>Review your final recommendations when the process is complete</li>
+                </ol>
+            </div>
+            
+            <div class="button-container">
+                <button class="start-button" onclick="startStudy()">
+                    Agree and Start
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This study is conducted for research purposes. By clicking "Agree and Start", you acknowledge that you have read and understood the information above.</p>
+        </div>
+    </div>
+
+    <script>
+        function startStudy() {
+            // Store consent in session storage
+            sessionStorage.setItem('studyConsent', 'true');
+            sessionStorage.setItem('studyStartTime', new Date().toISOString());
+            sessionStorage.setItem('autoStart', 'true'); // Flag to auto-start algorithm
+            
+            // Redirect to the main algorithm page
+            window.location.href = '/';
+        }
+        
+        // Check if user has already given consent
+        if (sessionStorage.getItem('studyConsent') === 'true') {
+            // Redirect to main page if already consented
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

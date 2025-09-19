@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - High-Dimensional Regret Minimization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .feedback-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .feedback-question {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .feedback-question h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            line-height: 1.4;
+        }
+
+        .feedback-question p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .rating-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .rating-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .rating-input-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .rating-label {
+            color: #856404;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .rating-input {
+            width: 80px;
+            padding: 12px;
+            border: 2px solid #ffeaa7;
+            border-radius: 8px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: 600;
+            color: #856404;
+            background: white;
+        }
+
+        .rating-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .rating-scale {
+            color: #856404;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        .submit-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .rating-input-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .button-container {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .submit-button {
+                margin: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="feedback-container">
+        <div class="header">
+            <h1>Feedback</h1>
+            <p>Your opinion matters to us</p>
+        </div>
+        
+        <div class="content">
+            <div class="feedback-question">
+                <h2>Algorithm Performance Rating</h2>
+                <p>Most existing algorithms are not capable of discovering your favorite option among high-dimensional data. For those that can, the number of questions required may exceed 1000. Due to this, those algorithms are not presented in this demo.</p>
+                <p><strong>Based on this, how would you rate our algorithm on a scale of 1-10?</strong></p>
+            </div>
+            
+            <div class="rating-section">
+                <h3>Your Rating</h3>
+                <div class="rating-input-container">
+                    <label for="rating" class="rating-label">Rating:</label>
+                    <input type="number" id="rating" class="rating-input" min="1" max="10" placeholder="1-10">
+                </div>
+                <div class="rating-scale">Scale: 1 (Poor) to 10 (Excellent)</div>
+            </div>
+            
+            <div class="button-container">
+                <button id="submitButton" class="submit-button" onclick="submitFeedback()">
+                    Submit Feedback
+                </button>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user has completed the study
+        if (sessionStorage.getItem('studyCompletion') === null) {
+            // Redirect to main page if study not completed
+            window.location.href = 'main.html';
+        }
+        
+        function submitFeedback() {
+            const rating = document.getElementById('rating').value;
+            const submitButton = document.getElementById('submitButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Clear previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Validate rating
+            if (!rating || rating < 1 || rating > 10) {
+                errorMessage.textContent = 'Please enter a valid rating between 1 and 10.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Disable submit button
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            
+            // Get study completion data
+            const studyData = JSON.parse(sessionStorage.getItem('studyCompletion') || '{}');
+            
+            // Prepare feedback data
+            const feedbackData = {
+                rating: parseInt(rating),
+                studyData: studyData,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Save feedback to localStorage (since we can't use server)
+            const existingFeedback = JSON.parse(localStorage.getItem('userFeedback') || '[]');
+            existingFeedback.push(feedbackData);
+            localStorage.setItem('userFeedback', JSON.stringify(existingFeedback));
+            
+            // Show success message
+            successMessage.textContent = 'Thank you! Your feedback has been recorded.';
+            successMessage.style.display = 'block';
+            
+            // Store feedback completion
+            sessionStorage.setItem('feedbackSubmitted', 'true');
+            
+            // Redirect to thank you page after a short delay
+            setTimeout(() => {
+                window.location.href = 'thank_you.html';
+            }, 2000);
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('rating').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitFeedback();
+            }
+        });
+    </script>
+</body>
+</html>

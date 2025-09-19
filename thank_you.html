@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - High-Dimensional Regret Minimization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .thank-you-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 50px 40px;
+        }
+
+        .header .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .thank-you-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .thank-you-message h2 {
+            color: #155724;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .thank-you-message p {
+            color: #155724;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .back-to-start-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-to-start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .back-to-start-button:active {
+            transform: translateY(0);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .thank-you-container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .header .icon {
+                font-size: 3em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="thank-you-container">
+        <div class="header">
+            <span class="icon">🎉</span>
+            <h1>Thank You!</h1>
+            <p>Your participation in our study is greatly appreciated</p>
+        </div>
+        
+        <div class="content">
+            <div class="thank-you-message">
+                <h2>Study Completed Successfully</h2>
+                <p>Thank you for taking the time to participate in our research study on high-dimensional regret minimization algorithms.</p>
+                <p>Your feedback and interaction data will help us improve interactive recommendation systems for future users.</p>
+            </div>
+            
+            <div class="button-container">
+                <button class="back-to-start-button" onclick="backToStart()">
+                    Back to Start
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This study was conducted for research purposes. All data collected was anonymous and used solely for algorithm evaluation.</p>
+        </div>
+    </div>
+
+    <script>
+        // Check if user has submitted feedback
+        if (sessionStorage.getItem('feedbackSubmitted') !== 'true') {
+            // Redirect to feedback page if feedback not submitted
+            window.location.href = 'feedback.html';
+        }
+        
+        function backToStart() {
+            // Clear all session data
+            sessionStorage.clear();
+            
+            // Redirect to consent page to start fresh
+            window.location.href = 'consent.html';
+        }
+        
+        // Auto-clear session data after 30 seconds (optional)
+        setTimeout(() => {
+            if (confirm('Would you like to start a new study session?')) {
+                backToStart();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

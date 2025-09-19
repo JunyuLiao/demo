@@ -1,0 +1,35 @@
+[
+  {
+    "rating": 10,
+    "timestamp": "2025-09-19T21:30:50.186Z",
+    "study_data": {
+      "startTime": "2025-09-19T21:25:48.516Z",
+      "endTime": "2025-09-19T21:28:42.709Z",
+      "questionsAnswered": 29,
+      "completed": true
+    },
+    "submission_time": "2025-09-19T16:30:50.189384"
+  },
+  {
+    "rating": 9,
+    "timestamp": "2025-09-19T21:32:01.195Z",
+    "study_data": {
+      "startTime": "2025-09-19T21:31:31.651Z",
+      "endTime": "2025-09-19T21:31:51.166Z",
+      "questionsAnswered": 0,
+      "completed": true
+    },
+    "submission_time": "2025-09-19T16:32:01.200288"
+  },
+  {
+    "rating": 9,
+    "timestamp": "2025-09-19T22:01:53.146Z",
+    "study_data": {
+      "startTime": "2025-09-19T22:01:04.114Z",
+      "endTime": "2025-09-19T22:01:24.090Z",
+      "questionsAnswered": 0,
+      "completed": true
+    },
+    "submission_time": "2025-09-19T17:01:53.148113"
+  }
+]

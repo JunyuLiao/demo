@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High-Dimensional Regret Minimization Algorithm</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            min-width: 120px;
+        }
+        
+        .questions-counter {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            min-width: 50px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        select, input, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .status-indicator {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-stopped {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .status-running {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .status-waiting {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .question-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .question-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .instruction-text {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #1565c0;
+        }
+        
+        .instruction-text p {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+        
+        .instruction-text p:first-child {
+            margin-top: 0;
+        }
+        
+        .instruction-text p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .option-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .option-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .option-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .option-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .option-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .dimensions-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 15px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 5px 0;
+        }
+        
+        .dimension-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+        
+        .dimensions-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .dimensions-grid::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+        
+        .dimensions-grid::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+        
+        .dimensions-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Firefox scrollbar for dimensions grid */
+        .dimensions-grid {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
+        }
+        
+        .dimension-label {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        
+        .dimension-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .final-recommendations {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .next-button-container {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .next-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .next-button:active {
+            transform: translateY(0);
+        }
+        
+        .final-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .recommendations-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .recommendation-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 15px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 60px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .recommendation-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-right: 8px;
+        }
+        
+        .recommendation-id {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.8em;
+        }
+        
+        .recommendation-dims {
+            font-size: 0.9em;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex: 1;
+            min-width: 0;
+            max-width: calc(100% - 120px);
+            padding: 5px 0;
+            margin-left: 10px;
+        }
+        
+        .recommendation-dims::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .recommendation-dims::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .recommendation-dims::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 3px;
+        }
+        
+        .recommendation-dims::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Firefox scrollbar */
+        .recommendation-dims {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.2);
+        }
+        
+        .loading-section {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .input-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .input-group input {
+            flex: 1;
+        }
+        
+        .input-group button {
+            min-width: 80px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .success {
+            color: #27ae60;
+            background: #f0f9f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>High-Dimensional Regret Minimization</h1>
+            <p>Choose the car you favor more among the following options</p>
+        </div>
+        
+        <div class="controls">
+            
+            
+            <div class="control-group">
+                <button id="startBtn">Start Algorithm</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Questions Answered:</label>
+                <div id="questionsCounter" class="questions-counter">0</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #333;">Interactive Decision Making</h3>
+                <span id="statusIndicator" class="status-indicator status-stopped">Stopped</span>
+            </div>
+            
+            <!-- Question Section -->
+            <div id="questionSection" class="question-section hidden">
+                <div class="question-title">Please choose the option you favor more:</div>
+                <div class="instruction-text">
+                    <p>• Click on the option you prefer, or enter the option number in the input field below</p>
+                    <p>• Consider the attributes shown, if none of them make sense to you, enter 0 to skip this question</p>
+                    <p>• You can scroll horizontally on each option to see all attributes if necessary</p>
+                    <p>• If you are tired of answering more questions, click "Stop & Get Results" to stop and get recommendations based on your current preferencess learned</p>
+                </div>
+                <div id="optionsContainer" class="options-container"></div>
+            <div id="inputSection" class="input-section">
+                <div class="input-group">
+                        <input type="text" id="userInput" placeholder="Enter your choice" />
+                        <button id="sendBtn">Submit Choice</button>
+                        <button id="stopEarlyBtn" class="btn-danger" style="margin-left: 10px;">Stop & Get Results</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Final Recommendations Section -->
+            <div id="finalRecommendations" class="final-recommendations hidden">
+                <div class="final-title">🎉 Final Recommendations</div>
+                <div id="recommendationsContainer" class="recommendations-grid"></div>
+                <div class="next-button-container">
+                    <button id="nextButton" class="next-button" onclick="goToFeedback()">Next</button>
+                </div>
+            </div>
+            
+            <!-- Loading Section -->
+            <div id="loadingSection" class="loading-section hidden">
+                <div class="loading-spinner"></div>
+                <div>Processing your preferences...</div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const questionSection = document.getElementById('questionSection');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const finalRecommendations = document.getElementById('finalRecommendations');
+        const recommendationsContainer = document.getElementById('recommendationsContainer');
+        const loadingSection = document.getElementById('loadingSection');
+        const userInput = document.getElementById('userInput');
+        const startBtn = document.getElementById('startBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const inputSection = document.getElementById('inputSection');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const stopEarlyBtn = document.getElementById('stopEarlyBtn');
+        
+        let isRunning = false;
+        let pollInterval = null;
+        let lastQuestionCount = 0;
+        let actualAnsweredCount = 0; // Manual counter for actual responses
+        let currentOptions = []; // Store current options data
+        let dimensionMap = {}; // Store dimension ID to name mapping
+        let lastOutputHash = ''; // Store hash of last output to avoid unnecessary updates
+        
+        // Event listeners
+        startBtn.addEventListener('click', startAlgorithm);
+        sendBtn.addEventListener('click', sendInput);
+        stopEarlyBtn.addEventListener('click', stopEarly);
+        
+        
+        // Enter key support for input
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendInput();
+            }
+        });
+        
+        // Functions
+        
+        
+        function setStatus(status) {
+            statusIndicator.className = 'status-indicator status-' + status;
+            statusIndicator.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            
+            isRunning = (status === 'running');
+            startBtn.disabled = isRunning;
+            userInput.disabled = !isRunning;
+            sendBtn.disabled = !isRunning;
+            stopEarlyBtn.disabled = !isRunning;
+        }
+        
+        function showQuestionSection() {
+            questionSection.classList.remove('hidden');
+            finalRecommendations.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            userInput.focus();
+        }
+        
+        function showFinalRecommendations() {
+            questionSection.classList.add('hidden');
+            finalRecommendations.classList.remove('hidden');
+            loadingSection.classList.add('hidden');
+        }
+        
+        function showLoading(message = 'Processing your preferences...') {
+            questionSection.classList.add('hidden');
+            finalRecommendations.classList.add('hidden');
+            loadingSection.classList.remove('hidden');
+            
+            // Update loading message
+            const loadingText = loadingSection.querySelector('div:last-child');
+            if (loadingText) {
+                loadingText.textContent = message;
+            }
+        }
+        
+        function parseOptionsFromOutput(lines) {
+            const options = [];
+            let dimensions = [];
+            let foundQuestion = false;
+            let foundHeader = false;
+            
+            console.log('Parsing options from output, lines:', lines.length);
+            
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Look for the question marker
+                if (line.includes('Please choose the option you favor more:')) {
+                    foundQuestion = true;
+                    console.log('Found question marker at line', i);
+                    continue;
+                }
+                
+                if (!foundQuestion) continue;
+                
+                // Parse dimensions header - could be "| Options | 0 | 1 |" or "| 1 | 4 | 5 |"
+                // Only match lines that contain ONLY integers (dimension IDs), not floats (option values)
+                if (line.startsWith('|') && (line.includes('Options') || /^\|\s*\d+\s*\|/.test(line))) {
+                    const parts = line.split('|').filter(part => part.trim() !== '');
+                    
+                    // If it contains "Options", skip the first part, otherwise use all parts
+                    if (line.includes('Options')) {
+                        dimensions = parts.slice(1).map(part => parseInt(part.trim())).filter(num => !isNaN(num));
+                    } else {
+                        // This is a dimensions-only line like "| 1| 4| 5| 15| 18|"
+                        // Verify that all parts are integers (not floats)
+                        const potentialDimensions = parts.map(part => parseInt(part.trim())).filter(num => !isNaN(num));
+                        const originalParts = parts.map(part => part.trim());
+                        
+                        // Check if all parts are integers (no decimal points)
+                        const allIntegers = originalParts.every(part => /^\d+$/.test(part));
+                        
+                        if (allIntegers && potentialDimensions.length > 0) {
+                            dimensions = potentialDimensions;
+                        } else {
+                            // This is likely an option data line, not a header
+                            continue;
+                        }
+                    }
+                    
+                foundHeader = true;
+                continue;
+                }
+                
+                // Skip separator lines
+                if (line.includes('---')) {
+                    continue;
+                }
+                
+                // Parse option data - could be "| Option1 | 1.234 |" or "| 1.234 | 5.678 |"
+                if (line.startsWith('|') && foundHeader && !line.includes('---')) {
+                const parts = line.split('|').filter(part => part.trim() !== '');
+                    
+                    if (parts.length >= 1) {
+                        let optionId, values;
+                        
+                        // Check if first part is "OptionX" format
+                        const optionMatch = parts[0].trim().match(/Option(\d+)/);
+                        if (optionMatch) {
+                            // Format: "| Option1 | 1.234 | 5.678 |"
+                            optionId = parseInt(optionMatch[1]);
+                            values = parts.slice(1).map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+                        } else {
+                            // Format: "| 1.234 | 5.678 |" (no OptionX prefix)
+                            // Check if this line contains float values (option data) vs integers (dimension header)
+                            const hasFloatValues = parts.some(part => /^\d+\.\d+$/.test(part.trim()));
+                            
+                            if (hasFloatValues) {
+                                optionId = options.length + 1; // Assign sequential IDs
+                                values = parts.map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+                            } else {
+                                // This might be a dimension header line that wasn't caught earlier
+                                continue;
+                            }
+                        }
+                        
+                        if (values.length > 0) {
+                            // Use the actual dimensions from the header, or fall back to indices
+                            const optionDimensions = dimensions.length > 0 ? 
+                                dimensions.slice(0, values.length) : 
+                                Array.from({length: values.length}, (_, i) => i);
+                            
+                            options.push({
+                                id: optionId,
+                                values: values,
+                                dimensions: optionDimensions
+                            });
+                        }
+                    }
+                }
+                
+                // Stop parsing if we hit the input prompt
+                if (line.includes('Your choice')) {
+                    break;
+                }
+            }
+            
+            console.log('Parsing complete, found', options.length, 'options');
+            return options;
+        }
+        
+        function parseFinalRecommendations(lines) {
+            const recommendations = [];
+            let startIndex = -1;
+            
+            // Find the start of final recommendations
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes('=== FINAL RECOMMENDATION ===')) {
+                    startIndex = i;
+                    break;
+                }
+            }
+            
+            if (startIndex === -1) return recommendations;
+            
+            // Parse recommendation lines
+            for (let i = startIndex + 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('Option') && line.includes(':')) {
+                    const optionMatch = line.match(/Option\s*(\d+):\s*(.+)/);
+                    if (optionMatch) {
+                        const optionId = parseInt(optionMatch[1]);
+                        const restOfLine = optionMatch[2].trim();
+                        
+                        // Parse dimension-value pairs like "dim 4: 33.1625 dim 15: 2.1959"
+                        const dimValuePairs = [];
+                        const dimMatches = restOfLine.match(/dim\s+(\d+):\s+([\d.]+)/g);
+                        if (dimMatches) {
+                            for (const match of dimMatches) {
+                                const pairMatch = match.match(/dim\s+(\d+):\s+([\d.]+)/);
+                                if (pairMatch) {
+                                    dimValuePairs.push({
+                                        dimension: parseInt(pairMatch[1]),
+                                        value: parseFloat(pairMatch[2])
+                                    });
+                                }
+                            }
+                        }
+                        
+                        if (dimValuePairs.length > 0) {
+                            recommendations.push({
+                                id: optionId,
+                                dimensions: dimValuePairs
+                            });
+                        }
+                    }
+                }
+            }
+            
+            return recommendations;
+        }
+        
+        function displayOptions(options) {
+            // Store scroll positions before updating
+            const scrollPositions = [];
+            const dimensionGrids = optionsContainer.querySelectorAll('.dimensions-grid');
+            dimensionGrids.forEach(grid => {
+                scrollPositions.push(grid.scrollLeft);
+            });
+            
+            optionsContainer.innerHTML = '';
+            currentOptions = options;
+            
+            options.forEach((option, index) => {
+                const optionCard = document.createElement('div');
+                optionCard.className = 'option-card';
+                optionCard.onclick = () => selectOption(index);
+                
+                let dimensionsHtml = '';
+                option.values.forEach((value, dimIndex) => {
+                    const dimLabel = option.dimensions[dimIndex] || dimIndex;
+                    // Use actual dimension name from mapping
+                    const displayLabel = getDimensionName(dimLabel);
+                    dimensionsHtml += `
+                        <div class="dimension-item">
+                            <div class="dimension-label">${displayLabel}:</div>
+                            <div class="dimension-value">${value.toFixed(3)}</div>
+                        </div>
+                    `;
+                });
+                
+                optionCard.innerHTML = `
+                    <div class="option-header">
+                        <div class="option-name">Option ${option.id}</div>
+                        <div class="option-id">${option.id}</div>
+                    </div>
+                    <div class="dimensions-grid">
+                        ${dimensionsHtml}
+                    </div>
+                `;
+                
+                optionsContainer.appendChild(optionCard);
+            });
+            
+            // Restore scroll positions after a brief delay to ensure DOM is updated
+            setTimeout(() => {
+                const newDimensionGrids = optionsContainer.querySelectorAll('.dimensions-grid');
+                newDimensionGrids.forEach((grid, index) => {
+                    if (scrollPositions[index] !== undefined) {
+                        grid.scrollLeft = scrollPositions[index];
+                    }
+                });
+            }, 10);
+        }
+        
+        function displayFinalRecommendations(recommendations) {
+            // Store scroll positions before updating
+            const scrollPositions = [];
+            const recommendationDims = recommendationsContainer.querySelectorAll('.recommendation-dims');
+            recommendationDims.forEach(dims => {
+                scrollPositions.push(dims.scrollLeft);
+            });
+            
+            recommendationsContainer.innerHTML = '';
+            
+            recommendations.forEach((rec, index) => {
+                const recCard = document.createElement('div');
+                recCard.className = 'recommendation-card';
+                
+                // Format dimension-value pairs using actual dimension names
+                const dimValueText = rec.dimensions.map(dim => 
+                    `${getDimensionName(dim.dimension)}: ${dim.value.toFixed(3)}`
+                ).join(' | ');
+                
+                recCard.innerHTML = `
+                    <div class="recommendation-header">
+                        <div class="recommendation-name">Option ${rec.id}</div>
+                        <div class="recommendation-id">#${rec.id}</div>
+                    </div>
+                    <div class="recommendation-dims">${dimValueText}</div>
+                `;
+                
+                recommendationsContainer.appendChild(recCard);
+            });
+            
+            // Restore scroll positions after a brief delay to ensure DOM is updated
+            setTimeout(() => {
+                const newRecommendationDims = recommendationsContainer.querySelectorAll('.recommendation-dims');
+                newRecommendationDims.forEach((dims, index) => {
+                    if (scrollPositions[index] !== undefined) {
+                        dims.scrollLeft = scrollPositions[index];
+                    }
+                });
+            }, 10);
+            
+            // Track study completion
+            trackStudyCompletion();
+        }
+        
+        function trackStudyCompletion() {
+            const startTime = sessionStorage.getItem('studyStartTime');
+            const endTime = new Date().toISOString();
+            const questionsAnswered = actualAnsweredCount;
+            
+            // Store completion data
+            const completionData = {
+                startTime: startTime,
+                endTime: endTime,
+                questionsAnswered: questionsAnswered,
+                completed: true
+            };
+            
+            sessionStorage.setItem('studyCompletion', JSON.stringify(completionData));
+            
+            // Send completion data to server
+            fetch('/study_completion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(completionData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Study completion recorded:', data);
+            })
+            .catch(error => {
+                console.error('Error recording study completion:', error);
+            });
+            
+            console.log('Study completed:', completionData);
+        }
+        
+        function goToFeedback() {
+            // Redirect to feedback page
+            window.location.href = 'feedback.html';
+        }
+        
+        function selectOption(index) {
+            // Remove previous selection
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            document.querySelectorAll('.option-card')[index].classList.add('selected');
+            
+            // Auto-fill input with choice
+            userInput.value = (index + 1).toString();
+        }
+        
+        
+        function stopEarly() {
+            // Send -99 to stop the algorithm early
+            userInput.value = '-99';
+            sendInput();
+        }
+        
+        function loadDimensionMap() {
+            fetch('map.json')
+            .then(response => response.json())
+            .then(data => {
+                dimensionMap = data;
+            })
+            .catch(error => {
+                console.error('Error loading dimension map:', error);
+            });
+        }
+        
+        function getDimensionName(dimensionId) {
+            return dimensionMap[dimensionId] || `Dimension ${dimensionId}`;
+        }
+        
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return hash.toString();
+        }
+        
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(pollStatus, 1000); // Poll every second
+        }
+        
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+        
+        function pollStatus() {
+            fetch('/get_status')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Polling response:', data);
+                if (data.running !== isRunning) {
+                    setStatus(data.running ? 'running' : 'stopped');
+                    if (!data.running) {
+                        stopPolling();
+                    }
+                }
+                
+                // Update output - only if content has changed
+                if (data.output && data.output.length > 0) {
+                    const lines = data.output;
+                    const currentHash = simpleHash(lines.join('\n'));
+                    
+                    // Only update if output has changed
+                    if (currentHash !== lastOutputHash) {
+                        lastOutputHash = currentHash;
+                        console.log('Output changed, updating display. Lines:', lines.length);
+                    
+                    // Check for algorithm phases and update loading message accordingly
+                    let currentPhase = 'Initializing algorithm...';
+                    for (let i = lines.length - 1; i >= 0; i--) {
+                        if (lines[i].includes('Phase 3: Starting interactive questioning...')) {
+                            currentPhase = 'Starting interactive questions...';
+                            break;
+                        } else if (lines[i].includes('Phase 2: Refining dimension selection...')) {
+                            currentPhase = 'Refining dimension selection...';
+                            break;
+                        } else if (lines[i].includes('Phase 1: Initializing dimension selection...')) {
+                            currentPhase = 'Initializing dimension selection...';
+                            break;
+                        } else if (lines[i].includes('Initializing algorithm phases...')) {
+                            currentPhase = 'Initializing algorithm phases...';
+                            break;
+                        }
+                    }
+                    
+                    // Check if algorithm has completed (has "=== FINAL RECOMMENDATION ===")
+                    let finalRecommendationsIndex = -1;
+                    for (let i = 0; i < lines.length; i++) {
+                        if (lines[i].includes("=== FINAL RECOMMENDATION ===")) {
+                            finalRecommendationsIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (finalRecommendationsIndex >= 0) {
+                        // Algorithm completed: show final recommendations
+                        const recommendations = parseFinalRecommendations(lines);
+                        if (recommendations.length > 0) {
+                            displayFinalRecommendations(recommendations);
+                            showFinalRecommendations();
+                        }
+                    } else {
+                        // Algorithm still running: look for current question
+                        let lastQuestionIndex = -1;
+                        for (let i = lines.length - 1; i >= 0; i--) {
+                            if (lines[i].includes("Please choose the option you favor more:")) {
+                                lastQuestionIndex = i;
+                                break;
+                            }
+                        }
+                        
+                        if (lastQuestionIndex >= 0) {
+                            // Parse and display current options
+                            const questionLines = lines.slice(lastQuestionIndex);
+                            const options = parseOptionsFromOutput(questionLines);
+                            
+                            if (options.length >= 2) {
+                                displayOptions(options);
+                                showQuestionSection();
+                            } else {
+                                showLoading('Preparing your first question...');
+                            }
+                        } else {
+                            // No question found yet, show loading with current phase
+                            showLoading(currentPhase);
+                        }
+                    }
+                    } // Close the hash check if statement
+                }
+            })
+            .catch(error => {
+                console.error('Error polling status:', error);
+            });
+        }
+        
+        
+        // Demo data for the algorithm simulation
+        const demoQuestions = [
+            {
+                options: [
+                    {
+                        id: 1,
+                        dimensions: {
+                            "Model Year": 2014.000,
+                            "Production (000)": 370.000,
+                            "Production Share": 0.024,
+                            "2-Cycle MPG": 29.178,
+                            "Real-World MPG": 23.051,
+                            "Real-World MPG_City": 19.448,
+                            "Real-World MPG_Hwy": 26.796
+                        }
+                    },
+                    {
+                        id: 2,
+                        dimensions: {
+                            "Model Year": 2018.000,
+                            "Production (000)": 167.000,
+                            "Production Share": 0.010,
+                            "2-Cycle MPG": 32.677,
+                            "Real-World MPG": 25.859,
+                            "Real-World MPG_City": 21.587,
+                            "Real-World MPG_Hwy": 30.397
+                        }
+                    }
+                ]
+            },
+            {
+                options: [
+                    {
+                        id: 1,
+                        dimensions: {
+                            "Model Year": 2016.000,
+                            "Production (000)": 245.000,
+                            "Production Share": 0.015,
+                            "2-Cycle MPG": 31.200,
+                            "Real-World MPG": 24.500,
+                            "Real-World MPG_City": 20.800,
+                            "Real-World MPG_Hwy": 28.200
+                        }
+                    },
+                    {
+                        id: 2,
+                        dimensions: {
+                            "Model Year": 2019.000,
+                            "Production (000)": 189.000,
+                            "Production Share": 0.012,
+                            "2-Cycle MPG": 33.100,
+                            "Real-World MPG": 26.200,
+                            "Real-World MPG_City": 22.100,
+                            "Real-World MPG_Hwy": 30.300
+                        }
+                    }
+                ]
+            },
+            {
+                options: [
+                    {
+                        id: 1,
+                        dimensions: {
+                            "Model Year": 2015.000,
+                            "Production (000)": 312.000,
+                            "Production Share": 0.020,
+                            "2-Cycle MPG": 28.500,
+                            "Real-World MPG": 22.800,
+                            "Real-World MPG_City": 19.200,
+                            "Real-World MPG_Hwy": 26.400
+                        }
+                    },
+                    {
+                        id: 2,
+                        dimensions: {
+                            "Model Year": 2020.000,
+                            "Production (000)": 156.000,
+                            "Production Share": 0.010,
+                            "2-Cycle MPG": 34.800,
+                            "Real-World MPG": 27.500,
+                            "Real-World MPG_Hwy": 31.200,
+                            "Real-World MPG_City": 23.800
+                        }
+                    }
+                ]
+            }
+        ];
+
+        const finalRecommendations = [
+            {
+                id: 1,
+                dimensions: {
+                    "Model Year": 2018.000,
+                    "Production (000)": 167.000,
+                    "Production Share": 0.010,
+                    "2-Cycle MPG": 32.677,
+                    "Real-World MPG": 25.859,
+                    "Real-World MPG_City": 21.587,
+                    "Real-World MPG_Hwy": 30.397
+                }
+            },
+            {
+                id: 2,
+                dimensions: {
+                    "Model Year": 2019.000,
+                    "Production (000)": 189.000,
+                    "Production Share": 0.012,
+                    "2-Cycle MPG": 33.100,
+                    "Real-World MPG": 26.200,
+                    "Real-World MPG_City": 22.100,
+                    "Real-World MPG_Hwy": 30.300
+                }
+            }
+        ];
+
+        // State variables for demo
+        let currentQuestionIndex = 0;
+        let questionsAnswered = 0;
+        let isRunning = false;
+
+        function startAlgorithm() {
+            console.log('Starting demo algorithm...');
+            
+            // Reset question counter for new algorithm
+            lastQuestionCount = 0;
+            actualAnsweredCount = 0; // Reset manual counter
+            const counterElement = document.getElementById('questionsCounter');
+            if (counterElement) {
+                counterElement.textContent = '0';
+            }
+            
+            // Clear previous state
+            questionSection.classList.add('hidden');
+            finalRecommendations.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            showLoading('Initializing algorithm...');
+            
+            // Simulate algorithm initialization
+            setTimeout(() => {
+                    setStatus('running');
+                showQuestion();
+            }, 2000);
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= demoQuestions.length) {
+                showFinalRecommendations();
+                return;
+            }
+
+            const question = demoQuestions[currentQuestionIndex];
+            displayOptions(question.options);
+            showQuestionSection();
+        }
+
+        function displayOptions(options) {
+            optionsContainer.innerHTML = '';
+            
+            options.forEach((option, index) => {
+                const optionCard = document.createElement('div');
+                optionCard.className = 'option-card';
+                optionCard.onclick = () => selectOption(index);
+                
+                let dimensionsHtml = '';
+                Object.entries(option.dimensions).forEach(([dimName, value]) => {
+                    dimensionsHtml += `
+                        <div class="dimension-item">
+                            <div class="dimension-label">${getDimensionName(dimName)}:</div>
+                            <div class="dimension-value">${value.toFixed(3)}</div>
+                        </div>
+                    `;
+                });
+                
+                optionCard.innerHTML = `
+                    <div class="option-header">
+                        <div class="option-name">Option ${option.id}</div>
+                        <div class="option-id">${option.id}</div>
+                    </div>
+                    <div class="dimensions-grid">
+                        ${dimensionsHtml}
+                    </div>
+                `;
+                
+                optionsContainer.appendChild(optionCard);
+            });
+        }
+
+        function selectOption(index) {
+            // Remove previous selection
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            document.querySelectorAll('.option-card')[index].classList.add('selected');
+            
+            // Auto-submit after selection
+            setTimeout(() => {
+                submitChoice(index + 1);
+            }, 500);
+        }
+
+        function submitChoice(choice = null) {
+            if (!isRunning) return;
+            
+            const input = choice || userInput.value.trim();
+            
+            if (input === '0') {
+                // Skip question
+                questionsAnswered++;
+                        actualAnsweredCount++;
+                updateQuestionsCount();
+                nextQuestion();
+                return;
+            }
+            
+            if (input === '1' || input === '2') {
+                questionsAnswered++;
+                actualAnsweredCount++;
+                updateQuestionsCount();
+                nextQuestion();
+            } else {
+                alert('Please enter 1, 2, or 0 to skip');
+            }
+            
+            userInput.value = '';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex >= demoQuestions.length) {
+                showFinalRecommendations();
+            } else {
+                showLoading('Preparing next question...');
+                setTimeout(() => {
+                    showQuestion();
+                }, 1000);
+            }
+        }
+
+        function showFinalRecommendations() {
+            isRunning = false;
+            setStatus('stopped');
+            
+            const recommendationsContainer = document.getElementById('recommendationsContainer');
+            recommendationsContainer.innerHTML = '';
+            
+            finalRecommendations.forEach((rec, index) => {
+                const recCard = document.createElement('div');
+                recCard.className = 'recommendation-card';
+                recCard.style.cssText = `
+                    background: white;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                `;
+                
+                const dimValueText = Object.entries(rec.dimensions)
+                    .map(([dim, value]) => `${getDimensionName(dim)}: ${value.toFixed(3)}`)
+                    .join(' | ');
+                
+                recCard.innerHTML = `
+                    <div style="margin-right: 20px;">
+                        <div style="font-weight: 600; font-size: 1.1em;">Option ${rec.id}</div>
+                        <div style="font-size: 0.8em; background: #667eea; color: white; padding: 2px 6px; border-radius: 10px; display: inline-block;">#${rec.id}</div>
+                    </div>
+                    <div style="font-size: 0.9em; color: #666; flex: 1; overflow-x: auto; white-space: nowrap;">${dimValueText}</div>
+                `;
+                
+                recommendationsContainer.appendChild(recCard);
+            });
+            
+            showFinalRecommendationsSection();
+        }
+        
+        
+        function sendInput() {
+            const input = userInput.value.trim();
+            if (!input) return;
+            
+            console.log('Sending input:', input);
+            submitChoice(input);
+        }
+        
+        
+        
+        
+        // Check for study consent on page load
+        if (sessionStorage.getItem('studyConsent') !== 'true') {
+            window.location.href = 'consent.html';
+        }
+        
+        // Load dimension mapping on page load
+        loadDimensionMap();
+        
+        // Check for auto-start flag and start algorithm automatically
+        if (sessionStorage.getItem('autoStart') === 'true') {
+            // Clear the auto-start flag to prevent re-triggering
+            sessionStorage.removeItem('autoStart');
+            
+            // Auto-start the algorithm after a short delay to ensure page is loaded
+            setTimeout(() => {
+                startAlgorithm();
+            }, 1000);
+        }
+        
+        // Clean up polling on page unload
+        window.addEventListener('beforeunload', function() {
+            stopPolling();
+        });
+    </script>
+</body>
+</html>
