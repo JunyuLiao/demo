@@ -26,7 +26,8 @@ endif
 
 # Compiler flags
 CXXFLAGS = -w -I$(INCLUDE_PATH)
-CXXFLAGS += --std=c++17 -Wall -Werror -pedantic -g # -fsanitize=address -fsanitize=undefined
+# Avoid debug symbols in production to reduce memory/size
+CXXFLAGS += --std=c++17 -Wall -Werror -pedantic
 LDFLAGS = -L$(LIBRARY_PATH) -lglpk -lm
 
 # Target executables

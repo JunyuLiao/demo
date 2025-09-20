@@ -77,11 +77,13 @@ class AlgorithmRunner:
     def start_algorithm(self, dataset_path="car.txt", use_real=False):
         """Start the C++ algorithm process"""
         try:
-            # Always build the algorithm to ensure correct version
-            print("Building algorithm (real version)...")
-            result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
-            if result.returncode != 0:
-                return False, f"Build failed: {result.stderr}"
+            # Build only if binary is missing and not explicitly skipped
+            skip_build = os.environ.get('SKIP_BUILD', '0') == '1'
+            if not skip_build and not os.path.exists('./run_web'):
+                print("Building algorithm (real version)...")
+                result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
+                if result.returncode != 0:
+                    return False, f"Build failed: {result.stderr}"
             
             # Start the algorithm process with the specified dataset
             self.process = subprocess.Popen(
@@ -119,7 +121,15 @@ class AlgorithmRunner:
                 print(f"Error reading output: {e}")
                 break
         
+        # Mark not running and log exit code for diagnosis
+        exit_code = None
+        try:
+            exit_code = self.process.poll() if self.process else None
+        except Exception:
+            exit_code = None
+        print(f"Algorithm process ended. exit_code={exit_code}")
         self.is_running = False
+        self.process = None
     
     def send_input(self, user_input):
         """Send user input to the algorithm process"""
