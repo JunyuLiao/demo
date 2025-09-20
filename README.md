@@ -1,15 +1,41 @@
 # High-Dimensional Regret Minimization Demo
 
-This app exposes a web UI and Python Flask server that runs the C++ algorithm.
+This app provides an interactive web UI (Flask) that runs a C++ high‑dimensional regret minimization algorithm.
 
-## Local
+## Quick start (local)
 
-- Build: `make web-real`
-- Run: `python3 start.py` then open http://localhost:5001
+- Prereqs: macOS/Linux with make, C++17 toolchain, GLPK installed (Homebrew/MacPorts on macOS)
+- Build the web binary:
+  - `make web-real`
+- Run the simple server:
+  - `python3 start.py`
+- Open: http://localhost:5001
+
+If you want to run on a custom port: `PORT=8080 python3 web_app_simple.py` then open http://localhost:8080
 
 ## Dataset
 
-- The dataset `car.txt` lives at the repo root. The app references it directly as `car.txt`.
+- `car.txt` is at the repo root. The app references it directly as `car.txt`.
+
+## Session isolation
+
+- Each browser session gets its own algorithm process, keyed by a generated `session_id`. Inputs are not shared between users.
+- Invalid inputs are handled on the frontend, backend, and C++ side. Enter option numbers in range, `0` to skip, or `-99` to stop early.
+
+## Data persistence
+
+- Feedback is stored as a JSON array in a writable volume directory:
+  - File path: `/data/user_feedback.json` (configurable via `DATA_DIR` env)
+  - Public endpoint to inspect: `/data/feedback.json`
+- Saved record fields: `startTime`, `endTime`, `questions`, `rating`, `ip`, `submission_time`.
+
+## Endpoints (HTTP)
+
+- `POST /start_algorithm` `{ session_id, use_real: true }` → starts the C++ process
+- `POST /send_input` `{ session_id, input }` → forwards answer to the running process
+- `POST /get_status` `{ session_id }` → returns `{ running, output[] }` (polled by UI)
+- `POST /stop_algorithm` `{ session_id }` → stops and cleans up
+- `GET  /data/feedback.json` → returns saved feedback JSON array
 
 ## Docker
 
@@ -20,12 +46,16 @@ docker build -t highdim-demo .
 docker run -p 5001:5001 -e PORT=5001 highdim-demo
 ```
 
-## Railway
+Notes:
+- The image installs GLPK and builds the C++ binary during the Docker build.
+- Runtime directories are created inside the image: `/app/output`, `/data`.
 
-This project is deployable to Railway using the Dockerfile.
+## Railway deployment
 
-1. Install Railway CLI
-2. `railway login` (or set `RAILWAY_TOKEN`)
-3. `railway init` (or `railway up` in the repo root)
+- Live demo (example): https://highdim-rm-demo-production.up.railway.app
+- Deploy with the CLI from the repo root:
+  1) `railway login`
+  2) `railway init` (create/link a project)
+  3) `railway up -s <service-name>`
 
-The server binds to `0.0.0.0` and reads `PORT` env var, so it will run the same way as local.
+The server binds to `0.0.0.0` and respects the `PORT` env variable supplied by Railway. Mount a volume at `/data` for persisted feedback.
