@@ -25,6 +25,7 @@ def resolve_feedback_file() -> str:
     return 'user_feedback.json'
 
 FEEDBACK_FILE = resolve_feedback_file()
+LOG_DIR = os.path.dirname(FEEDBACK_FILE) or '.'
 
 def migrate_feedback_file_if_needed():
     legacy_path = 'user_feedback.json'
@@ -136,10 +137,20 @@ class AlgorithmRunner:
         self.last_exit_code = None
         self.last_exit_signal = None
         self.last_exit_reason = ""
+        self.session_id = None
+        self.log_path = None
         
-    def start_algorithm(self, dataset_path="car.txt", use_real=False):
+    def start_algorithm(self, dataset_path="car.txt", use_real=False, session_id: str = None):
         """Start the C++ algorithm process"""
         try:
+            # Prepare logging
+            self.session_id = session_id or self.session_id or "default"
+            try:
+                os.makedirs(LOG_DIR, exist_ok=True)
+            except Exception:
+                pass
+            self.log_path = os.path.join(LOG_DIR, f"run_{self.session_id}.log")
+
             # Build only if missing to reduce CPU spikes on Railway
             if not os.path.exists("./run_web"):
                 print("Building algorithm (real version)...")
@@ -165,6 +176,11 @@ class AlgorithmRunner:
             self.last_exit_code = None
             self.last_exit_signal = None
             self.last_exit_reason = ""
+            try:
+                with open(self.log_path, 'a') as lf:
+                    lf.write(f"=== start session={self.session_id} dataset={dataset_path} time={datetime.now().isoformat()} ===\n")
+            except Exception:
+                pass
             
             # Start output reading thread
             threading.Thread(target=self._read_output, daemon=True).start()
@@ -181,6 +197,11 @@ class AlgorithmRunner:
                 line = self.process.stdout.readline()
                 if line:
                     self.output_lines.append(line.rstrip())
+                    try:
+                        with open(self.log_path, 'a') as lf:
+                            lf.write(line)
+                    except Exception:
+                        pass
                 elif self.process.poll() is not None:
                     # Process has ended
                     break
@@ -204,6 +225,11 @@ class AlgorithmRunner:
             msg = f"[run_web] {self.last_exit_reason}"
             print(msg)
             self.output_lines.append(msg)
+            try:
+                with open(self.log_path, 'a') as lf:
+                    lf.write(msg + "\n")
+            except Exception:
+                pass
         except Exception as e:
             print(f"Error after process end: {e}")
     
@@ -279,7 +305,7 @@ def start_algorithm():
         runner.stop_algorithm()
         time.sleep(0.2)
 
-    success, message = runner.start_algorithm(dataset, use_real)
+    success, message = runner.start_algorithm(dataset, use_real, session_id=session_id)
     return jsonify({'success': success, 'message': message})
 
 @app.route('/send_input', methods=['POST'])
@@ -431,6 +457,25 @@ def admin_feedback():
                 path = legacy
         count = len(data)
         return jsonify({ 'path': path, 'count': count, 'data': data })
+
+@app.route('/admin/run_logs', methods=['GET'])
+def admin_run_logs():
+    """Return recent run_web logs for a session. Params: session_id, tail (int)"""
+    try:
+        session_id = request.args.get('session_id', 'default')
+        tail = int(request.args.get('tail', '200'))
+        path = os.path.join(LOG_DIR, f"run_{session_id}.log")
+        if not os.path.exists(path):
+            # If not found, list available
+            files = [f for f in os.listdir(LOG_DIR) if f.startswith('run_') and f.endswith('.log')]
+            return jsonify({ 'error': 'log not found', 'path': path, 'available': files }), 404
+        # Tail last N lines
+        lines = []
+        with open(path, 'r') as f:
+            lines = f.readlines()[-tail:]
+        return jsonify({ 'path': path, 'lines': lines })
+    except Exception as e:
+        return jsonify({ 'error': str(e) }), 500
     except Exception as e:
         return jsonify({ 'error': str(e), 'path': FEEDBACK_FILE }), 500
 
