@@ -18,10 +18,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Build the web-real C++ binary
+# Build with sanitizers enabled per Makefile
 RUN make clean && make web-real
 
 # Env for Flask port (Railway will set PORT)
 ENV PYTHONUNBUFFERED=1
+# Conservative defaults to reduce memory/CPU usage (can override in Railway vars)
+ENV HD_NUM_QUESTIONS=60 \
+    HD_K=8
 
 # Start the polling Flask app (uses PORT env var, defaults to 5001)
 CMD ["python", "web_app_simple.py"]

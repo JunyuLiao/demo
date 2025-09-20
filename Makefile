@@ -27,15 +27,9 @@ endif
 # Compiler flags
 CXXFLAGS = -w -I$(INCLUDE_PATH)
 CXXFLAGS += --std=c++17 -Wall -Werror -pedantic -g
-LDFLAGS = -L$(LIBRARY_PATH) -lglpk -lm
-
-# Optional sanitizers (enable via ENABLE_ASAN=1)
-ifeq ($(ENABLE_ASAN),1)
-    CXXFLAGS += -O1 -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined
-    LDFLAGS  += -fsanitize=address -fsanitize=undefined
-else
-    CXXFLAGS += -Ofast
-endif
+# Enable sanitizers to catch segfault root causes in production logs
+CXXFLAGS += -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
+LDFLAGS = -L$(LIBRARY_PATH) -lglpk -lm -fsanitize=address -fsanitize=undefined
 
 # Target executables
 TARGET = run
@@ -43,11 +37,11 @@ WEB_TARGET = run_web
 
 # Build all
 all:
-	$(CXX) $(CXXFLAGS) main.cpp highdim.cpp attribute_subset.cpp util.cpp other/*.c other/*.cpp $(LDFLAGS) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) main.cpp highdim.cpp attribute_subset.cpp util.cpp other/*.c other/*.cpp $(LDFLAGS) -Ofast -o $(TARGET)
 
 # Build web version (real interactive)
 web-real:
-	$(CXX) $(CXXFLAGS) main_web_real.cpp highdim.cpp attribute_subset.cpp util_web.cpp other/*.c other/*.cpp $(LDFLAGS) -o $(WEB_TARGET)
+	$(CXX) $(CXXFLAGS) main_web_real.cpp highdim.cpp attribute_subset.cpp util_web.cpp other/*.c other/*.cpp $(LDFLAGS) -Ofast -o $(WEB_TARGET)
 
 # Build with Valgrind
 valgrind:

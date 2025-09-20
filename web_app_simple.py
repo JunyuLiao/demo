@@ -457,8 +457,6 @@ def admin_feedback():
                 path = legacy
         count = len(data)
         return jsonify({ 'path': path, 'count': count, 'data': data })
-    except Exception as e:
-        return jsonify({ 'error': str(e), 'path': FEEDBACK_FILE }), 500
 
 @app.route('/admin/run_logs', methods=['GET'])
 def admin_run_logs():
@@ -478,6 +476,8 @@ def admin_run_logs():
         return jsonify({ 'path': path, 'lines': lines })
     except Exception as e:
         return jsonify({ 'error': str(e) }), 500
+    except Exception as e:
+        return jsonify({ 'error': str(e), 'path': FEEDBACK_FILE }), 500
 
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
