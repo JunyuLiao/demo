@@ -17,6 +17,12 @@ If you want to run on a custom port: `PORT=8080 python3 web_app_simple.py` then 
 
 - `car.txt` is at the repo root. The app references it directly as `car.txt`.
 
+## Output directory (required)
+
+- The C++ algorithm writes intermediate files to `output/` (e.g., `output/hyperplane_data`, `output/ext_pt`).
+- This folder is checked into the repository (empty placeholder files are present) so it always exists in fresh clones and inside containers.
+- If you remove it, recreate it before running: `mkdir -p output`.
+
 ## Session isolation
 
 - Each browser session gets its own algorithm process, keyed by a generated `session_id`. Inputs are not shared between users.
@@ -49,6 +55,7 @@ docker run -p 5001:5001 -e PORT=5001 highdim-demo
 Notes:
 - The image installs GLPK and builds the C++ binary during the Docker build.
 - Runtime directories are created inside the image: `/app/output`, `/data`.
+- The presence of `output/` in the repo is important so the container has this path available for the C++ process at runtime.
 
 ## Railway deployment
 
