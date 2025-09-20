@@ -15,6 +15,37 @@ from flask import Flask, render_template, request, jsonify
 import queue
 
 app = Flask(__name__)
+# Feedback storage path resolution (supports Railway volume at /data)
+def resolve_feedback_file() -> str:
+    feedback_dir = os.environ.get('FEEDBACK_DIR')
+    if feedback_dir and os.path.isdir(feedback_dir):
+        return os.path.join(feedback_dir, 'user_feedback.json')
+    if os.path.isdir('/data'):
+        return os.path.join('/data', 'user_feedback.json')
+    return 'user_feedback.json'
+
+FEEDBACK_FILE = resolve_feedback_file()
+
+def migrate_feedback_file_if_needed():
+    legacy_path = 'user_feedback.json'
+    try:
+        # Only migrate if target is different from legacy and legacy exists but target does not
+        if FEEDBACK_FILE != legacy_path and os.path.exists(legacy_path) and not os.path.exists(FEEDBACK_FILE):
+            print(f"Migrating legacy feedback file from {legacy_path} to {FEEDBACK_FILE}...")
+            try:
+                os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
+            except Exception:
+                pass
+            with open(legacy_path, 'r') as src:
+                content = src.read()
+            with open(FEEDBACK_FILE, 'w') as dst:
+                dst.write(content)
+            print("Migration completed.")
+    except Exception as e:
+        print(f"Feedback migration skipped due to error: {e}")
+
+migrate_feedback_file_if_needed()
+
 
 # Legacy globals (no longer used with session-based runners)
 current_process = None
@@ -266,8 +297,8 @@ def submit_feedback():
             'submission_time': datetime.now().isoformat()
         }
         
-        # Save to feedback file
-        feedback_file = 'user_feedback.json'
+        # Save to feedback file (prefer volume at /data)
+        feedback_file = FEEDBACK_FILE
         
         # Read existing feedback data
         existing_feedback = []
@@ -275,12 +306,18 @@ def submit_feedback():
             with open(feedback_file, 'r') as f:
                 existing_feedback = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
-            existing_feedback = []
+            # Try legacy path once for backward compatibility
+            try:
+                with open('user_feedback.json', 'r') as f:
+                    existing_feedback = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                existing_feedback = []
         
         # Add new feedback
         existing_feedback.append(feedback_data)
         
         # Write back to file
+        os.makedirs(os.path.dirname(feedback_file) or '.', exist_ok=True)
         with open(feedback_file, 'w') as f:
             json.dump(existing_feedback, f, indent=2)
         
