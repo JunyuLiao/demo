@@ -567,6 +567,15 @@
         let dimensionMap = {}; // Store dimension ID to name mapping
         let lastOutputHash = ''; // Store hash of last output to avoid unnecessary updates
         
+        // Session management
+        let sessionId = sessionStorage.getItem('sessionId');
+        if (!sessionId) {
+            sessionId = (
+                Date.now().toString(36) + Math.random().toString(36).slice(2)
+            );
+            sessionStorage.setItem('sessionId', sessionId);
+        }
+
         // Event listeners
         startBtn.addEventListener('click', startAlgorithm);
         sendBtn.addEventListener('click', sendInput);
@@ -971,7 +980,11 @@
         }
         
         function pollStatus() {
-            fetch('/get_status')
+            fetch('/get_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId })
+            })
             .then(response => response.json())
             .then(data => {
                 console.log('Polling response:', data);
@@ -1085,7 +1098,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ dataset: dataset, use_real: true })
+                body: JSON.stringify({ dataset: dataset, use_real: true, session_id: sessionId })
             })
             .then(response => {
                 console.log('Response status:', response.status);
@@ -1118,7 +1131,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ input: input })
+                body: JSON.stringify({ input: input, session_id: sessionId })
             })
             .then(response => response.json())
             .then(data => {

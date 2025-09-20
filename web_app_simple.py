@@ -16,12 +16,26 @@ import queue
 
 app = Flask(__name__)
 
-# Global variables for process management
+# Legacy globals (no longer used with session-based runners)
 current_process = None
 output_queue = queue.Queue()
 input_queue = queue.Queue()
 algorithm_output = []
 algorithm_running = False
+
+# Session-based runner registry
+sessions = {}
+sessions_lock = threading.Lock()
+
+def get_runner(session_id, create_if_missing=False):
+    if not session_id:
+        return None
+    with sessions_lock:
+        runner = sessions.get(session_id)
+        if runner is None and create_if_missing:
+            runner = AlgorithmRunner()
+            sessions[session_id] = runner
+        return runner
 
 class AlgorithmRunner:
     def __init__(self):
@@ -106,8 +120,7 @@ class AlgorithmRunner:
             'output': self.output_lines
         }
 
-# Global algorithm runner instance
-algorithm_runner = AlgorithmRunner()
+# Removed single global runner in favor of per-session runners
 
 @app.route('/')
 def index():
@@ -132,45 +145,64 @@ def thank_you():
 
 @app.route('/start_algorithm', methods=['POST'])
 def start_algorithm():
-    """Start the algorithm"""
-    data = request.get_json()
+    """Start the algorithm for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'success': False, 'message': 'session_id is required'}), 400
     dataset = 'car.txt'  # Always use car.txt at repo root
     use_real = data.get('use_real', False)
-    
-    success, message = algorithm_runner.start_algorithm(dataset, use_real)
-    
-    return jsonify({
-        'success': success,
-        'message': message
-    })
+
+    runner = get_runner(session_id, create_if_missing=True)
+    # If a previous process exists, terminate before starting a new one
+    if runner.is_running:
+        runner.stop_algorithm()
+        time.sleep(0.2)
+
+    success, message = runner.start_algorithm(dataset, use_real)
+    return jsonify({'success': success, 'message': message})
 
 @app.route('/send_input', methods=['POST'])
 def send_input():
-    """Send user input to the algorithm"""
-    data = request.get_json()
+    """Send user input to the algorithm for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'success': False, 'message': 'session_id is required'}), 400
     user_input = data.get('input', '')
-    
-    success = algorithm_runner.send_input(user_input)
-    
-    return jsonify({
-        'success': success,
-        'message': 'Input sent' if success else 'Failed to send input'
-    })
+
+    runner = get_runner(session_id)
+    if not runner or not runner.is_running:
+        return jsonify({'success': False, 'message': 'No active session'}), 400
+
+    success = runner.send_input(user_input)
+    return jsonify({'success': success, 'message': 'Input sent' if success else 'Failed to send input'})
 
 @app.route('/stop_algorithm', methods=['POST'])
 def stop_algorithm():
-    """Stop the algorithm"""
-    algorithm_runner.stop_algorithm()
-    return jsonify({
-        'success': True,
-        'message': 'Algorithm stopped'
-    })
+    """Stop the algorithm for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'success': False, 'message': 'session_id is required'}), 400
+    runner = get_runner(session_id)
+    if runner:
+        runner.stop_algorithm()
+        with sessions_lock:
+            sessions.pop(session_id, None)
+    return jsonify({'success': True, 'message': 'Algorithm stopped'})
 
-@app.route('/get_status')
+@app.route('/get_status', methods=['POST'])
 def get_status():
-    """Get current algorithm status and output"""
-    status = algorithm_runner.get_status()
-    return jsonify(status)
+    """Get current algorithm status and output for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'running': False, 'output': [], 'error': 'session_id is required'}), 400
+    runner = get_runner(session_id)
+    if not runner:
+        return jsonify({'running': False, 'output': []})
+    return jsonify(runner.get_status())
 
 @app.route('/get_datasets')
 def get_datasets():
