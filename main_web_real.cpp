@@ -24,19 +24,19 @@ using namespace std;
 int main(int argc, char *argv[]){
     // Default parameters
     char *input = (char*)"car.txt";
-    int size = 2;
-    int d_prime = 3;
-    int d_hat = 7;
-    int d_hat_2 = 6;
-    int K = 10;
-    int d_bar = 5;
-    int num_questions = 100;
+    int size = getenv("ALG_SIZE") ? atoi(getenv("ALG_SIZE")) : 2;
+    int d_prime = getenv("ALG_D_PRIME") ? atoi(getenv("ALG_D_PRIME")) : 3;
+    int d_hat = getenv("ALG_D_HAT") ? atoi(getenv("ALG_D_HAT")) : 7;
+    int d_hat_2 = getenv("ALG_D_HAT2") ? atoi(getenv("ALG_D_HAT2")) : 6;
+    int K = getenv("ALG_K") ? atoi(getenv("ALG_K")) : 10;
+    int d_bar = getenv("ALG_D_BAR") ? atoi(getenv("ALG_D_BAR")) : 5;
+    int num_questions = getenv("ALG_NUM_QUESTIONS") ? atoi(getenv("ALG_NUM_QUESTIONS")) : 100;
     int num_quest_init = num_questions;
     
     // Algorithm parameters
-    int s = 2;
-    double epsilon = 0.0;
-    int maxRound = 1000;
+    int s = getenv("ALG_S") ? atoi(getenv("ALG_S")) : 2;
+    double epsilon = getenv("ALG_EPS") ? atof(getenv("ALG_EPS")) : 0.0;
+    int maxRound = getenv("ALG_MAX_ROUND") ? atoi(getenv("ALG_MAX_ROUND")) : 1000;
     double Qcount, Csize;
     int prune_option = RTREE;
     int dom_option = HYPER_PLANE;
