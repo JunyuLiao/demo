@@ -1,6 +1,6 @@
 # High-Dimensional Regret Minimization Demo: An advanced interactive recommendation system
 
-This app provides an interactive web UI (Flask) that runs a C++ high‑dimensional regret minimization algorithm.
+This app provides an interactive web UI (Flask) that runs our interactive recommendation algorithm.
 
 ## Quick start (local)
 

@@ -1,6 +1,6 @@
 # Ignore dataset, output, and plot folders
 datasets/
-output/
+# output/  # keep tracked for runtime files used by C++ (hyperplane_data, ext_pt)
 plot/
 result/
 plot_old/
