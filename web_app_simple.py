@@ -77,6 +77,9 @@ class AlgorithmRunner:
     def start_algorithm(self, dataset_path="car.txt", use_real=False):
         """Start the C++ algorithm process"""
         try:
+            # Ensure output directory exists for C++ intermediate files
+            os.makedirs('output', exist_ok=True)
+            
             # Build only if binary is missing and not explicitly skipped
             skip_build = os.environ.get('SKIP_BUILD', '0') == '1'
             if not skip_build and not os.path.exists('./run_web'):

@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the app
 COPY . .
 
+# Ensure runtime directories exist inside the image
+RUN mkdir -p /app/output /data
+
 # Build the web-real C++ binary
 RUN make clean && make web-real
 
