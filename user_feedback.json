@@ -1,6 +1,18 @@
-{"rating": 10, "timestamp": "2025-09-20T01:54:15.555Z", "study_data": {"startTime": "2025-09-20T01:53:55.769Z", "endTime": "2025-09-20T01:54:11.335Z", "questionsAnswered": 0, "completed": true}, "submission_time": "2025-09-19T20:54:15.559322"}
-{"rating": 10, "timestamp": "2025-09-20T02:09:18.227Z", "study_data": {"startTime": "2025-09-20T02:08:53.741Z", "endTime": "2025-09-20T02:09:14.284Z", "questionsAnswered": 0, "completed": true}, "submission_time": "2025-09-19T21:09:18.228985"}
-{"rating": 9, "timestamp": "2025-09-20T02:27:48.254Z", "study_data": {"startTime": "2025-09-20T02:26:03.658Z", "endTime": "2025-09-20T02:27:10.147Z", "questionsAnswered": 2, "completed": true}, "submission_time": "2025-09-19T21:27:48.257914"}
-{"rating": 8, "timestamp": "2025-09-20T02:27:49.702Z", "study_data": {"startTime": "2025-09-20T02:26:33.910Z", "endTime": "2025-09-20T02:27:35.834Z", "questionsAnswered": 23, "completed": true}, "submission_time": "2025-09-19T21:27:49.704251"}
-{"rating": 9, "timestamp": "2025-09-20T03:31:06.137Z", "study_data": {"startTime": "2025-09-20T03:29:52.731Z", "endTime": "2025-09-20T03:31:01.329Z", "questionsAnswered": 30, "completed": true}, "submission_time": "2025-09-19T22:31:06.140161"}
-{"time": "2025-09-19T22:44:51.162611", "rating": 9, "questionsAnswered": 17, "ip": "127.0.0.1", "country": ""}
+[
+  {
+    "startTime": "2025-09-20T04:36:32.722Z",
+    "endTime": "2025-09-20T04:36:47.762Z",
+    "questions": 4,
+    "rating": 9,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-09-19T23:36:52.144541"
+  },
+  {
+    "startTime": "2025-09-20T04:59:53.516Z",
+    "endTime": "2025-09-20T05:00:50.554Z",
+    "questions": 32,
+    "rating": 9,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-09-20T00:01:00.242904"
+  }
+]

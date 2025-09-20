@@ -28,14 +28,24 @@ int show_to_user(point_set_t* P_raw, point_set_t* S, std::set<int> selected_dime
     fflush(stdout);  // Force output to be sent immediately
     
     // For web interface, we need to wait for user input
-    int maxIdx = -1;
-    
-    // // Use scanf like the regular version to properly wait for input
-    // scanf("%d", &maxIdx);
-    
-    // return maxIdx==0 ? -1 : maxIdx-1;
-    while (maxIdx != 0 && maxIdx != 1 && maxIdx != 2 && maxIdx != -99){
-        scanf("%d", &maxIdx);
+    int maxIdx = -1000000;
+
+    // Accept any integer in [0..size] or -99 to stop
+    while (true) {
+        int rc = scanf("%d", &maxIdx);
+        if (rc != 1) {
+            // Clear invalid token
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF) {}
+            printf("Invalid input. Enter 0..%d or -99 to stop: ", size);
+            fflush(stdout);
+            continue;
+        }
+        if (maxIdx == -99 || (maxIdx >= 0 && maxIdx <= size)) {
+            break;
+        }
+        printf("Out of range. Enter 0..%d or -99 to stop: ", size);
+        fflush(stdout);
     }
     return maxIdx==-99 ? -99 : maxIdx-1;
 }

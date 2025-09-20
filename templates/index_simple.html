@@ -513,9 +513,10 @@
                 <div class="question-title">Please choose the option you favor more:</div>
                 <div class="instruction-text">
                     <p>• Click on the option you prefer, or enter the option number in the input field below</p>
-                    <p>• Consider the attributes shown, if none of them make sense to you, enter 0 to skip this question</p>
-                    <p>• You can scroll horizontally on each option to see all attributes if necessary</p>
-                    <p>• If you are tired of answering more questions, click "Stop & Get Results" to stop and get recommendations based on your current preferencess learned</p>
+                    <p>• Consider the information presented, if none of the attributes make sense to you, enter 0 to skip this question</p>
+                    <p>• You can scroll horizontally on each option to see all information if necessary</p>
+                    <p>• If tired of answering more questions, click "Stop & Get Results" get recommendations immediately based on the current preferences learned</p>
+                    <p>Note: Since the dataset is real, some of the data may be missing. Enter 0 to skip the question in this case.</p>
                 </div>
                 <div id="optionsContainer" class="options-container"></div>
             <div id="inputSection" class="input-section">
@@ -524,6 +525,10 @@
                         <button id="sendBtn">Submit Choice</button>
                         <button id="stopEarlyBtn" class="btn-danger" style="margin-left: 10px;">Stop & Get Results</button>
                     </div>
+                        <div style="margin-top: 8px; color: #6c757d; font-size: 0.9em;">
+                            If you answer all questions, you are guaranteed to get your favorite option; 
+                            if you stopped early, the system may need to output a set of recommendations (instead of a single one) to ensure accuracy.
+                        </div>
                 </div>
             </div>
             
@@ -1125,6 +1130,12 @@
         function sendInput() {
             const input = userInput.value.trim();
             if (!input) return;
+            const num = Number(input);
+            const maxOption = currentOptions.length;
+            if (!Number.isInteger(num) || !(num === -99 || (num >= 0 && num <= maxOption))) {
+                alert('Please enter a valid input');
+                return;
+            }
             
             fetch('/send_input', {
                 method: 'POST',

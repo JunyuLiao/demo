@@ -213,13 +213,20 @@ def send_input():
     session_id = data.get('session_id')
     if not session_id:
         return jsonify({'success': False, 'message': 'session_id is required'}), 400
-    user_input = data.get('input', '')
+    raw_input = str(data.get('input', '')).strip()
+
+    # Validate integer input
+    try:
+        user_input = int(raw_input)
+    except Exception:
+        return jsonify({'success': False, 'message': 'Please enter an integer.'}), 400
 
     runner = get_runner(session_id)
     if not runner or not runner.is_running:
         return jsonify({'success': False, 'message': 'No active session'}), 400
 
-    success = runner.send_input(user_input)
+    # Forward input
+    success = runner.send_input(str(user_input))
     return jsonify({'success': success, 'message': 'Input sent' if success else 'Failed to send input'})
 
 @app.route('/stop_algorithm', methods=['POST'])
