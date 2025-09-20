@@ -46,6 +46,66 @@ def migrate_feedback_file_if_needed():
 
 migrate_feedback_file_if_needed()
 
+# Utilities to handle both legacy JSON array and NDJSON formats
+def _read_feedback_records(path: str):
+    records = []
+    try:
+        with open(path, 'r') as f:
+            content = f.read()
+        # Try whole-file JSON first
+        try:
+            parsed = json.loads(content)
+            if isinstance(parsed, list):
+                records.extend(parsed)
+            elif isinstance(parsed, dict):
+                records.append(parsed)
+            return records
+        except json.JSONDecodeError:
+            pass
+
+        # Try to extract a JSON array substring if present
+        try:
+            start = content.find('[')
+            end = content.rfind(']')
+            if start != -1 and end != -1 and end > start:
+                arr_text = content[start:end+1]
+                parsed = json.loads(arr_text)
+                if isinstance(parsed, list):
+                    records.extend(parsed)
+        except json.JSONDecodeError:
+            pass
+
+        # Parse remaining as NDJSON (one JSON object per line)
+        for line in content.splitlines():
+            line_stripped = line.strip()
+            if not line_stripped or not line_stripped.startswith('{'):
+                continue
+            try:
+                records.append(json.loads(line_stripped))
+            except json.JSONDecodeError:
+                continue
+    except FileNotFoundError:
+        return []
+    return records
+
+def _migrate_to_ndjson_if_array_file(path: str):
+    try:
+        if not os.path.exists(path):
+            return
+        with open(path, 'r') as f:
+            first_non_ws = f.read(1)
+            if first_non_ws != '[':
+                return
+        # Convert legacy/mixed file to pure NDJSON
+        records = _read_feedback_records(path)
+        os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+        with open(path, 'w') as f:
+            for rec in records:
+                f.write(json.dumps(rec) + '\n')
+        print(f"Migrated feedback file at {path} to NDJSON format")
+    except Exception as e:
+        print(f"NDJSON migration skipped due to error: {e}")
+
 
 # Legacy globals (no longer used with session-based runners)
 current_process = None
@@ -305,6 +365,9 @@ def submit_feedback():
             'country': country
         }
 
+        # Before writing, if the existing file is a JSON array, migrate it to NDJSON
+        _migrate_to_ndjson_if_array_file(FEEDBACK_FILE)
+
         # Append line-delimited JSON (one record per line)
         feedback_file = FEEDBACK_FILE
         os.makedirs(os.path.dirname(feedback_file) or '.', exist_ok=True)
@@ -330,25 +393,12 @@ def admin_feedback():
         path = FEEDBACK_FILE
         data = []
         if os.path.exists(path):
-            try:
-                # Try array JSON first (legacy)
-                with open(path, 'r') as f:
-                    data = json.load(f)
-                if not isinstance(data, list):
-                    data = [data]
-            except json.JSONDecodeError:
-                # Parse as NDJSON (one JSON object per line)
-                with open(path, 'r') as f:
-                    data = [json.loads(line) for line in f if line.strip()]
+            data = _read_feedback_records(path)
         else:
             # Fallback check legacy path if current path missing
             legacy = 'user_feedback.json'
             if os.path.exists(legacy):
-                with open(legacy, 'r') as f:
-                    try:
-                        data = json.load(f)
-                    except json.JSONDecodeError:
-                        data = [json.loads(line) for line in f if line.strip()]
+                data = _read_feedback_records(legacy)
                 path = legacy
         count = len(data)
         return jsonify({ 'path': path, 'count': count, 'data': data })
