@@ -245,30 +245,20 @@ void update_ext_vec(point_set_t* P_raw, std::set<int> set_final_dimensions, poin
     fflush(stdout);  // Force output to be sent immediately
 
 	int max_i = -1;
-    int result = 0;
-    
-    // Fixed input handling for web interface - same fix as util_web.cpp
-    do {
-        result = scanf("%d", &max_i);
-        if (result != 1) {
-            // Input reading failed, clear buffer and try again
-            int c;
-            while ((c = getchar()) != '\n' && c != EOF);
-            max_i = -1;
-        }
-        fflush(stdin);  // Clear input buffer
-    } while (max_i != 0 && max_i != 1 && max_i != 2 && max_i != -99);
-    
-    // Debug output
-    printf("Received input: %d\n", max_i);
-    fflush(stdout);
-    
+	scanf("%d", &max_i);
+	
+	// Validate and return appropriate value
 	if (max_i == -99) {
 		keep_answer = false;
 		return;
 	}
-	if (max_i != 0) max_i = max_i-1;
-
+	if (max_i == 0) {
+		max_i = -1;  // Not interested
+	} else if (max_i == 1 || max_i == 2) {
+		max_i = max_i - 1;  // Convert to 0-based index
+	} else {
+		max_i = -1;  // Invalid input, treat as not interested
+	}
 	// get the better car among those from the user
 	last_best = current_best_idx;
 	current_best_idx = C_idx[S[max_i]];
