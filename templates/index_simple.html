@@ -668,10 +668,7 @@
                 foundHeader = true;
                 continue;
                 }
-                } else if (line.includes("dimensions:")) {
-                    // Phase 2 format: "dimensions:" line - skip it, the actual dimensions are on the next line
-                    continue;
-                }                
+                
                 // Skip separator lines
                 if (line.includes('---')) {
                     continue;
@@ -1065,7 +1062,7 @@
         
         
         function startAlgorithm() {
-            const dataset = 'datasets/car.txt';
+            const dataset = 'car.txt';
             
             console.log('Starting algorithm with dataset:', dataset);
             

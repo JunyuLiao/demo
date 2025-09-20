@@ -27,20 +27,17 @@ int show_to_user(point_set_t* P_raw, point_set_t* S, std::set<int> selected_dime
     printf("Your choice (0 for not interested): ");
     fflush(stdout);  // Force output to be sent immediately
     
-    // Fixed input handling - read once and validate
+    // For web interface, we need to wait for user input
     int maxIdx = -1;
-    scanf("%d", &maxIdx);
     
-    // Validate and return appropriate value
-    if (maxIdx == -99) {
-        return -99;  // Stop signal
-    } else if (maxIdx == 0) {
-        return -1;   // Not interested
-    } else if (maxIdx == 1 || maxIdx == 2) {
-        return maxIdx - 1;  // Convert to 0-based index
-    } else {
-        return -1;   // Invalid input, treat as not interested
+    // // Use scanf like the regular version to properly wait for input
+    // scanf("%d", &maxIdx);
+    
+    // return maxIdx==0 ? -1 : maxIdx-1;
+    while (maxIdx != 0 && maxIdx != 1 && maxIdx != 2 && maxIdx != -99){
+        scanf("%d", &maxIdx);
     }
+    return maxIdx==-99 ? -99 : maxIdx-1;
 }
 
 point_set_t* generate_S(point_set_t* P, std::set<int> selected_dimensions, int size){

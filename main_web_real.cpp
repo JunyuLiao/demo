@@ -23,8 +23,7 @@ using namespace std;
 // Real interactive version for web interface
 int main(int argc, char *argv[]){
     // Default parameters
-    char *input = "datasets/e100-10k.txt";
-    // char *input = "datasets/car.txt";
+    char *input = (char*)"car.txt";
     int size = 2;
     int d_prime = 3;
     int d_hat = 7;
@@ -60,8 +59,7 @@ int main(int argc, char *argv[]){
         system("pwd");
         printf("Files in current directory: ");
         system("ls -la");
-        printf("Files in datasets directory: ");
-        system("ls -la datasets/");
+    // Datasets directory may not exist; only list current directory
         exit(1);
     } else {
         printf("File %s opened successfully\n", input);

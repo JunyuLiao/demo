@@ -29,7 +29,7 @@ class AlgorithmRunner:
         self.is_running = False
         self.output_lines = []
         
-    def start_algorithm(self, dataset_path="datasets/car.txt", use_real=False):
+    def start_algorithm(self, dataset_path="car.txt", use_real=False):
         """Start the C++ algorithm process"""
         try:
             # Always build the algorithm to ensure correct version
@@ -134,7 +134,7 @@ def thank_you():
 def start_algorithm():
     """Start the algorithm"""
     data = request.get_json()
-    dataset = 'datasets/car.txt'  # Always use car.txt
+    dataset = 'car.txt'  # Always use car.txt at repo root
     use_real = data.get('use_real', False)
     
     success, message = algorithm_runner.start_algorithm(dataset, use_real)
@@ -174,15 +174,17 @@ def get_status():
 
 @app.route('/get_datasets')
 def get_datasets():
-    """Get list of available datasets"""
+    """Get list of available datasets. With root-level car.txt, return it if present."""
     datasets = []
-    datasets_dir = "datasets"
-    
-    if os.path.exists(datasets_dir):
+    # Prefer root-level car.txt
+    if os.path.exists('car.txt'):
+        datasets.append('car.txt')
+    # Backward compatibility: also include any .txt files in datasets/ if it exists
+    datasets_dir = 'datasets'
+    if os.path.isdir(datasets_dir):
         for file in os.listdir(datasets_dir):
             if file.endswith('.txt'):
-                datasets.append(file)
-    
+                datasets.append(os.path.join(datasets_dir, file))
     return jsonify({'datasets': datasets})
 
 @app.route('/map.json')

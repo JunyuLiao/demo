@@ -25,7 +25,7 @@ using namespace std;
 int main(int argc, char *argv[]){
 	// if (argc != 8) return 0;
 	if (argc != 1) return 0;
-	char *input = "datasets/e100-10k.txt"; //char* input = argv[1];
+	char *input = (char*)"car.txt"; //char* input = argv[1];
 	point_set_t* P_raw = read_points(input);
 	point_set_t* P = read_points(input);
 	int n = P->numberOfPoints;

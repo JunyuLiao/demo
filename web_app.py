@@ -28,7 +28,7 @@ class AlgorithmRunner:
         self.process = None
         self.is_running = False
         
-    def start_algorithm(self, dataset_path="datasets/e100-10k.txt"):
+    def start_algorithm(self, dataset_path="car.txt"):
         """Start the C++ algorithm process"""
         try:
             # Build the web algorithm if needed
@@ -108,7 +108,7 @@ def index():
 def start_algorithm():
     """Start the algorithm"""
     data = request.get_json()
-    dataset = data.get('dataset', 'datasets/e100-10k.txt')
+    dataset = data.get('dataset', 'car.txt')
     
     success, message = algorithm_runner.start_algorithm(dataset)
     
@@ -141,15 +141,15 @@ def stop_algorithm():
 
 @app.route('/get_datasets')
 def get_datasets():
-    """Get list of available datasets"""
+    """Get list of available datasets. With root-level car.txt, return it if present."""
     datasets = []
-    datasets_dir = "datasets"
-    
-    if os.path.exists(datasets_dir):
+    if os.path.exists('car.txt'):
+        datasets.append('car.txt')
+    datasets_dir = 'datasets'
+    if os.path.isdir(datasets_dir):
         for file in os.listdir(datasets_dir):
             if file.endswith('.txt'):
-                datasets.append(file)
-    
+                datasets.append(os.path.join(datasets_dir, file))
     return jsonify({'datasets': datasets})
 
 @socketio.on('connect')
