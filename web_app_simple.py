@@ -133,15 +133,21 @@ class AlgorithmRunner:
         self.process = None
         self.is_running = False
         self.output_lines = []
+        self.last_exit_code = None
+        self.last_exit_signal = None
+        self.last_exit_reason = ""
         
     def start_algorithm(self, dataset_path="car.txt", use_real=False):
         """Start the C++ algorithm process"""
         try:
-            # Always build the algorithm to ensure correct version
-            print("Building algorithm (real version)...")
-            result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
-            if result.returncode != 0:
-                return False, f"Build failed: {result.stderr}"
+            # Build only if missing to reduce CPU spikes on Railway
+            if not os.path.exists("./run_web"):
+                print("Building algorithm (real version)...")
+                result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
+                if result.returncode != 0:
+                    return False, f"Build failed: {result.stderr}"
+            else:
+                print("Using existing run_web binary (skip build)")
             
             # Start the algorithm process with the specified dataset
             self.process = subprocess.Popen(
@@ -156,6 +162,9 @@ class AlgorithmRunner:
             
             self.is_running = True
             self.output_lines = []
+            self.last_exit_code = None
+            self.last_exit_signal = None
+            self.last_exit_reason = ""
             
             # Start output reading thread
             threading.Thread(target=self._read_output, daemon=True).start()
@@ -180,6 +189,23 @@ class AlgorithmRunner:
                 break
         
         self.is_running = False
+        try:
+            rc = self.process.returncode if self.process else None
+            self.last_exit_code = rc
+            if rc is not None and rc < 0:
+                # Negative return code indicates termination by signal on POSIX
+                self.last_exit_signal = -rc
+                self.last_exit_reason = f"Terminated by signal {self.last_exit_signal}"
+            elif rc is not None:
+                self.last_exit_signal = None
+                self.last_exit_reason = f"Exited with code {rc}"
+            else:
+                self.last_exit_reason = "Process ended"
+            msg = f"[run_web] {self.last_exit_reason}"
+            print(msg)
+            self.output_lines.append(msg)
+        except Exception as e:
+            print(f"Error after process end: {e}")
     
     def send_input(self, user_input):
         """Send user input to the algorithm process"""
@@ -208,7 +234,10 @@ class AlgorithmRunner:
         """Get current status"""
         return {
             'running': self.is_running,
-            'output': self.output_lines
+            'output': self.output_lines,
+            'exit_code': self.last_exit_code,
+            'exit_signal': self.last_exit_signal,
+            'exit_reason': self.last_exit_reason
         }
 
 # Removed single global runner in favor of per-session runners
