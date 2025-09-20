@@ -1,0 +1,13 @@
+[
+  {
+    "rating": 10,
+    "timestamp": "2025-09-20T01:54:15.555Z",
+    "study_data": {
+      "startTime": "2025-09-20T01:53:55.769Z",
+      "endTime": "2025-09-20T01:54:11.335Z",
+      "questionsAnswered": 0,
+      "completed": true
+    },
+    "submission_time": "2025-09-19T20:54:15.559322"
+  }
+]
