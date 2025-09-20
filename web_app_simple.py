@@ -283,29 +283,20 @@ def view_feedback():
 
 @app.route('/data/completions.json')
 def view_completions():
-    data_dir = get_data_dir()
-    completion_file = os.path.join(data_dir, 'study_completion.json')
-    return jsonify(read_json_array(completion_file))
+    return jsonify({'error': 'Not stored'}), 404
 
 @app.route('/study_completion', methods=['POST'])
 def study_completion():
     """Record study completion data"""
     try:
-        data = request.get_json()
-        
-        # Persist to volume-backed JSON
-        completion_record = {
-            'startTime': data.get('startTime', ''),
-            'endTime': data.get('endTime', ''),
-            'questionsAnswered': data.get('questionsAnswered', 0),
-            'completed': data.get('completed', False),
-            'submission_time': datetime.now().isoformat()
-        }
-        data_dir = get_data_dir()
-        completion_file = os.path.join(data_dir, 'study_completion.json')
-        append_json_array(completion_file, completion_record)
-        return jsonify({'success': True, 'message': 'Study completion recorded', 'file': completion_file})
-        
+        # Accept but do not persist separate completion records.
+        data = request.get_json() or {}
+        print("Study completion ping:")
+        print(f"  Start Time: {data.get('startTime', 'N/A')}")
+        print(f"  End Time: {data.get('endTime', 'N/A')}")
+        print(f"  Questions Answered: {data.get('questionsAnswered', 0)}")
+        print(f"  Completed: {data.get('completed', False)}")
+        return jsonify({'success': True, 'message': 'OK'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -313,25 +304,37 @@ def study_completion():
 def submit_feedback():
     """Collect user feedback rating"""
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         
         # Validate rating
         rating = data.get('rating')
         if not rating or rating < 1 or rating > 10:
             return jsonify({'success': False, 'error': 'Invalid rating'}), 400
         
-        # Prepare feedback data for saving
-        feedback_data = {
+        # Extract study info
+        study = data.get('studyData', {}) or {}
+        start_time = study.get('startTime', '')
+        end_time = study.get('endTime', '')
+        questions = study.get('questionsAnswered', 0)
+        # Client IP (consider X-Forwarded-For when behind proxy)
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip and ',' in ip:
+            ip = ip.split(',')[0].strip()
+        
+        # Prepare minimal record
+        record = {
+            'startTime': start_time,
+            'endTime': end_time,
+            'questions': questions,
             'rating': rating,
-            'timestamp': data.get('timestamp', ''),
-            'study_data': data.get('studyData', {}),
+            'ip': ip,
             'submission_time': datetime.now().isoformat()
         }
         
-        # Save to volume-backed feedback file
+        # Save only to feedback.json in DATA_DIR (/data)
         data_dir = get_data_dir()
         feedback_file = os.path.join(data_dir, 'user_feedback.json')
-        append_json_array(feedback_file, feedback_data)
+        append_json_array(feedback_file, record)
         return jsonify({'success': True, 'message': 'Feedback recorded successfully', 'file': feedback_file})
         
     except Exception as e:
