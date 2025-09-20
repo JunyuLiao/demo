@@ -333,6 +333,33 @@ def submit_feedback():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/admin/feedback', methods=['GET'])
+def admin_feedback():
+    """Return stored feedback JSON directly for quick inspection.
+
+    Response shape: { path: str, count: int|None, data: list|object }
+    """
+    try:
+        path = FEEDBACK_FILE
+        data = []
+        if os.path.exists(path):
+            try:
+                with open(path, 'r') as f:
+                    data = json.load(f)
+            except json.JSONDecodeError:
+                data = []
+        else:
+            # Fallback check legacy path if current path missing
+            legacy = 'user_feedback.json'
+            if os.path.exists(legacy):
+                with open(legacy, 'r') as f:
+                    data = json.load(f)
+                path = legacy
+        count = len(data) if isinstance(data, list) else None
+        return jsonify({ 'path': path, 'count': count, 'data': data })
+    except Exception as e:
+        return jsonify({ 'error': str(e), 'path': FEEDBACK_FILE }), 500
+
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     os.makedirs('templates', exist_ok=True)
