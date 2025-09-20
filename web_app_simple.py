@@ -288,46 +288,33 @@ def submit_feedback():
         rating = data.get('rating')
         if not rating or rating < 1 or rating > 10:
             return jsonify({'success': False, 'error': 'Invalid rating'}), 400
-        
-        # Prepare feedback data for saving
-        feedback_data = {
-            'rating': rating,
-            'timestamp': data.get('timestamp', ''),
-            'study_data': data.get('studyData', {}),
-            'submission_time': datetime.now().isoformat()
+
+        # Extract minimal fields
+        study_data = data.get('studyData', {}) or {}
+        num_questions = int(study_data.get('questionsAnswered', 0))
+        # Best-effort client IP and region from headers
+        xff = request.headers.get('X-Forwarded-For', '')
+        client_ip = (xff.split(',')[0].strip() if xff else request.remote_addr) or ''
+        country = request.headers.get('CF-IPCountry') or request.headers.get('X-Appengine-Country') or request.headers.get('X-Country-Code') or ''
+
+        feedback_record = {
+            'time': datetime.now().isoformat(),
+            'rating': int(rating),
+            'questionsAnswered': num_questions,
+            'ip': client_ip,
+            'country': country
         }
-        
-        # Save to feedback file (prefer volume at /data)
+
+        # Append line-delimited JSON (one record per line)
         feedback_file = FEEDBACK_FILE
-        
-        # Read existing feedback data
-        existing_feedback = []
-        try:
-            with open(feedback_file, 'r') as f:
-                existing_feedback = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            # Try legacy path once for backward compatibility
-            try:
-                with open('user_feedback.json', 'r') as f:
-                    existing_feedback = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                existing_feedback = []
-        
-        # Add new feedback
-        existing_feedback.append(feedback_data)
-        
-        # Write back to file
         os.makedirs(os.path.dirname(feedback_file) or '.', exist_ok=True)
-        with open(feedback_file, 'w') as f:
-            json.dump(existing_feedback, f, indent=2)
-        
-        # Also log to console for immediate visibility
-        print("User Feedback Data:")
-        print(f"  Rating: {rating}/10")
-        print(f"  Timestamp: {data.get('timestamp', 'N/A')}")
-        print(f"  Study Data: {data.get('studyData', {})}")
+        with open(feedback_file, 'a') as f:
+            f.write(json.dumps(feedback_record) + '\n')
+
+        print("User Feedback Recorded (NDJSON):")
+        print(f"  {feedback_record}")
         print(f"  Saved to: {feedback_file}")
-        
+
         return jsonify({'success': True, 'message': 'Feedback recorded successfully'})
         
     except Exception as e:
@@ -344,18 +331,26 @@ def admin_feedback():
         data = []
         if os.path.exists(path):
             try:
+                # Try array JSON first (legacy)
                 with open(path, 'r') as f:
                     data = json.load(f)
+                if not isinstance(data, list):
+                    data = [data]
             except json.JSONDecodeError:
-                data = []
+                # Parse as NDJSON (one JSON object per line)
+                with open(path, 'r') as f:
+                    data = [json.loads(line) for line in f if line.strip()]
         else:
             # Fallback check legacy path if current path missing
             legacy = 'user_feedback.json'
             if os.path.exists(legacy):
                 with open(legacy, 'r') as f:
-                    data = json.load(f)
+                    try:
+                        data = json.load(f)
+                    except json.JSONDecodeError:
+                        data = [json.loads(line) for line in f if line.strip()]
                 path = legacy
-        count = len(data) if isinstance(data, list) else None
+        count = len(data)
         return jsonify({ 'path': path, 'count': count, 'data': data })
     except Exception as e:
         return jsonify({ 'error': str(e), 'path': FEEDBACK_FILE }), 500
