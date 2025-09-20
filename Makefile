@@ -26,10 +26,8 @@ endif
 
 # Compiler flags
 CXXFLAGS = -w -I$(INCLUDE_PATH)
-CXXFLAGS += --std=c++17 -Wall -Werror -pedantic -g
-# Enable sanitizers to catch segfault root causes in production logs
-CXXFLAGS += -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
-LDFLAGS = -L$(LIBRARY_PATH) -lglpk -lm -fsanitize=address -fsanitize=undefined
+CXXFLAGS += --std=c++17 -Wall -Werror -pedantic -g # -fsanitize=address -fsanitize=undefined
+LDFLAGS = -L$(LIBRARY_PATH) -lglpk -lm
 
 # Target executables
 TARGET = run

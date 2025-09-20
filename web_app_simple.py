@@ -15,98 +15,6 @@ from flask import Flask, render_template, request, jsonify
 import queue
 
 app = Flask(__name__)
-# Feedback storage path resolution (supports Railway volume at /data)
-def resolve_feedback_file() -> str:
-    feedback_dir = os.environ.get('FEEDBACK_DIR')
-    if feedback_dir and os.path.isdir(feedback_dir):
-        return os.path.join(feedback_dir, 'user_feedback.json')
-    if os.path.isdir('/data'):
-        return os.path.join('/data', 'user_feedback.json')
-    return 'user_feedback.json'
-
-FEEDBACK_FILE = resolve_feedback_file()
-LOG_DIR = os.path.dirname(FEEDBACK_FILE) or '.'
-
-def migrate_feedback_file_if_needed():
-    legacy_path = 'user_feedback.json'
-    try:
-        # Only migrate if target is different from legacy and legacy exists but target does not
-        if FEEDBACK_FILE != legacy_path and os.path.exists(legacy_path) and not os.path.exists(FEEDBACK_FILE):
-            print(f"Migrating legacy feedback file from {legacy_path} to {FEEDBACK_FILE}...")
-            try:
-                os.makedirs(os.path.dirname(FEEDBACK_FILE), exist_ok=True)
-            except Exception:
-                pass
-            with open(legacy_path, 'r') as src:
-                content = src.read()
-            with open(FEEDBACK_FILE, 'w') as dst:
-                dst.write(content)
-            print("Migration completed.")
-    except Exception as e:
-        print(f"Feedback migration skipped due to error: {e}")
-
-migrate_feedback_file_if_needed()
-
-# Utilities to handle both legacy JSON array and NDJSON formats
-def _read_feedback_records(path: str):
-    records = []
-    try:
-        with open(path, 'r') as f:
-            content = f.read()
-        # Try whole-file JSON first
-        try:
-            parsed = json.loads(content)
-            if isinstance(parsed, list):
-                records.extend(parsed)
-            elif isinstance(parsed, dict):
-                records.append(parsed)
-            return records
-        except json.JSONDecodeError:
-            pass
-
-        # Try to extract a JSON array substring if present
-        try:
-            start = content.find('[')
-            end = content.rfind(']')
-            if start != -1 and end != -1 and end > start:
-                arr_text = content[start:end+1]
-                parsed = json.loads(arr_text)
-                if isinstance(parsed, list):
-                    records.extend(parsed)
-        except json.JSONDecodeError:
-            pass
-
-        # Parse remaining as NDJSON (one JSON object per line)
-        for line in content.splitlines():
-            line_stripped = line.strip()
-            if not line_stripped or not line_stripped.startswith('{'):
-                continue
-            try:
-                records.append(json.loads(line_stripped))
-            except json.JSONDecodeError:
-                continue
-    except FileNotFoundError:
-        return []
-    return records
-
-def _migrate_to_ndjson_if_array_file(path: str):
-    try:
-        if not os.path.exists(path):
-            return
-        with open(path, 'r') as f:
-            first_non_ws = f.read(1)
-            if first_non_ws != '[':
-                return
-        # Convert legacy/mixed file to pure NDJSON
-        records = _read_feedback_records(path)
-        os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
-        with open(path, 'w') as f:
-            for rec in records:
-                f.write(json.dumps(rec) + '\n')
-        print(f"Migrated feedback file at {path} to NDJSON format")
-    except Exception as e:
-        print(f"NDJSON migration skipped due to error: {e}")
-
 
 # Legacy globals (no longer used with session-based runners)
 current_process = None
@@ -129,36 +37,51 @@ def get_runner(session_id, create_if_missing=False):
             sessions[session_id] = runner
         return runner
 
+# --------- Data storage helpers (volume-aware) ---------
+def get_data_dir():
+    """Return a writable data directory, preferring /data or $DATA_DIR."""
+    preferred = os.environ.get('DATA_DIR', '/data')
+    try:
+        os.makedirs(preferred, exist_ok=True)
+        test_path = os.path.join(preferred, '.write_test')
+        with open(test_path, 'w') as f:
+            f.write('ok')
+        os.remove(test_path)
+        return preferred
+    except Exception:
+        # Fallback to local directory
+        os.makedirs('.', exist_ok=True)
+        return '.'
+
+def read_json_array(filepath):
+    try:
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def append_json_array(filepath, item):
+    data = read_json_array(filepath)
+    data.append(item)
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(filepath) or '.', exist_ok=True)
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
+
 class AlgorithmRunner:
     def __init__(self):
         self.process = None
         self.is_running = False
         self.output_lines = []
-        self.last_exit_code = None
-        self.last_exit_signal = None
-        self.last_exit_reason = ""
-        self.session_id = None
-        self.log_path = None
         
-    def start_algorithm(self, dataset_path="car.txt", use_real=False, session_id: str = None):
+    def start_algorithm(self, dataset_path="car.txt", use_real=False):
         """Start the C++ algorithm process"""
         try:
-            # Prepare logging
-            self.session_id = session_id or self.session_id or "default"
-            try:
-                os.makedirs(LOG_DIR, exist_ok=True)
-            except Exception:
-                pass
-            self.log_path = os.path.join(LOG_DIR, f"run_{self.session_id}.log")
-
-            # Build only if missing to reduce CPU spikes on Railway
-            if not os.path.exists("./run_web"):
-                print("Building algorithm (real version)...")
-                result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
-                if result.returncode != 0:
-                    return False, f"Build failed: {result.stderr}"
-            else:
-                print("Using existing run_web binary (skip build)")
+            # Always build the algorithm to ensure correct version
+            print("Building algorithm (real version)...")
+            result = subprocess.run(["make", "web-real"], capture_output=True, text=True)
+            if result.returncode != 0:
+                return False, f"Build failed: {result.stderr}"
             
             # Start the algorithm process with the specified dataset
             self.process = subprocess.Popen(
@@ -173,14 +96,6 @@ class AlgorithmRunner:
             
             self.is_running = True
             self.output_lines = []
-            self.last_exit_code = None
-            self.last_exit_signal = None
-            self.last_exit_reason = ""
-            try:
-                with open(self.log_path, 'a') as lf:
-                    lf.write(f"=== start session={self.session_id} dataset={dataset_path} time={datetime.now().isoformat()} ===\n")
-            except Exception:
-                pass
             
             # Start output reading thread
             threading.Thread(target=self._read_output, daemon=True).start()
@@ -197,11 +112,6 @@ class AlgorithmRunner:
                 line = self.process.stdout.readline()
                 if line:
                     self.output_lines.append(line.rstrip())
-                    try:
-                        with open(self.log_path, 'a') as lf:
-                            lf.write(line)
-                    except Exception:
-                        pass
                 elif self.process.poll() is not None:
                     # Process has ended
                     break
@@ -210,28 +120,6 @@ class AlgorithmRunner:
                 break
         
         self.is_running = False
-        try:
-            rc = self.process.returncode if self.process else None
-            self.last_exit_code = rc
-            if rc is not None and rc < 0:
-                # Negative return code indicates termination by signal on POSIX
-                self.last_exit_signal = -rc
-                self.last_exit_reason = f"Terminated by signal {self.last_exit_signal}"
-            elif rc is not None:
-                self.last_exit_signal = None
-                self.last_exit_reason = f"Exited with code {rc}"
-            else:
-                self.last_exit_reason = "Process ended"
-            msg = f"[run_web] {self.last_exit_reason}"
-            print(msg)
-            self.output_lines.append(msg)
-            try:
-                with open(self.log_path, 'a') as lf:
-                    lf.write(msg + "\n")
-            except Exception:
-                pass
-        except Exception as e:
-            print(f"Error after process end: {e}")
     
     def send_input(self, user_input):
         """Send user input to the algorithm process"""
@@ -260,10 +148,7 @@ class AlgorithmRunner:
         """Get current status"""
         return {
             'running': self.is_running,
-            'output': self.output_lines,
-            'exit_code': self.last_exit_code,
-            'exit_signal': self.last_exit_signal,
-            'exit_reason': self.last_exit_reason
+            'output': self.output_lines
         }
 
 # Removed single global runner in favor of per-session runners
@@ -305,7 +190,7 @@ def start_algorithm():
         runner.stop_algorithm()
         time.sleep(0.2)
 
-    success, message = runner.start_algorithm(dataset, use_real, session_id=session_id)
+    success, message = runner.start_algorithm(dataset, use_real)
     return jsonify({'success': success, 'message': message})
 
 @app.route('/send_input', methods=['POST'])
@@ -375,20 +260,38 @@ def get_dimension_map():
     except FileNotFoundError:
         return jsonify({'error': 'Dimension mapping file not found'}), 404
 
+
+# --------- Data inspection endpoints ---------
+@app.route('/data/feedback.json')
+def view_feedback():
+    data_dir = get_data_dir()
+    feedback_file = os.path.join(data_dir, 'user_feedback.json')
+    return jsonify(read_json_array(feedback_file))
+
+@app.route('/data/completions.json')
+def view_completions():
+    data_dir = get_data_dir()
+    completion_file = os.path.join(data_dir, 'study_completion.json')
+    return jsonify(read_json_array(completion_file))
+
 @app.route('/study_completion', methods=['POST'])
 def study_completion():
     """Record study completion data"""
     try:
         data = request.get_json()
         
-        # Log completion data (in a real study, you might save this to a database)
-        print("Study Completion Data:")
-        print(f"  Start Time: {data.get('startTime', 'N/A')}")
-        print(f"  End Time: {data.get('endTime', 'N/A')}")
-        print(f"  Questions Answered: {data.get('questionsAnswered', 0)}")
-        print(f"  Completed: {data.get('completed', False)}")
-        
-        return jsonify({'success': True, 'message': 'Study completion recorded'})
+        # Persist to volume-backed JSON
+        completion_record = {
+            'startTime': data.get('startTime', ''),
+            'endTime': data.get('endTime', ''),
+            'questionsAnswered': data.get('questionsAnswered', 0),
+            'completed': data.get('completed', False),
+            'submission_time': datetime.now().isoformat()
+        }
+        data_dir = get_data_dir()
+        completion_file = os.path.join(data_dir, 'study_completion.json')
+        append_json_array(completion_file, completion_record)
+        return jsonify({'success': True, 'message': 'Study completion recorded', 'file': completion_file})
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -403,81 +306,23 @@ def submit_feedback():
         rating = data.get('rating')
         if not rating or rating < 1 or rating > 10:
             return jsonify({'success': False, 'error': 'Invalid rating'}), 400
-
-        # Extract minimal fields
-        study_data = data.get('studyData', {}) or {}
-        num_questions = int(study_data.get('questionsAnswered', 0))
-        # Best-effort client IP and region from headers
-        xff = request.headers.get('X-Forwarded-For', '')
-        client_ip = (xff.split(',')[0].strip() if xff else request.remote_addr) or ''
-        country = request.headers.get('CF-IPCountry') or request.headers.get('X-Appengine-Country') or request.headers.get('X-Country-Code') or ''
-
-        feedback_record = {
-            'time': datetime.now().isoformat(),
-            'rating': int(rating),
-            'questionsAnswered': num_questions,
-            'ip': client_ip,
-            'country': country
+        
+        # Prepare feedback data for saving
+        feedback_data = {
+            'rating': rating,
+            'timestamp': data.get('timestamp', ''),
+            'study_data': data.get('studyData', {}),
+            'submission_time': datetime.now().isoformat()
         }
-
-        # Before writing, if the existing file is a JSON array, migrate it to NDJSON
-        _migrate_to_ndjson_if_array_file(FEEDBACK_FILE)
-
-        # Append line-delimited JSON (one record per line)
-        feedback_file = FEEDBACK_FILE
-        os.makedirs(os.path.dirname(feedback_file) or '.', exist_ok=True)
-        with open(feedback_file, 'a') as f:
-            f.write(json.dumps(feedback_record) + '\n')
-
-        print("User Feedback Recorded (NDJSON):")
-        print(f"  {feedback_record}")
-        print(f"  Saved to: {feedback_file}")
-
-        return jsonify({'success': True, 'message': 'Feedback recorded successfully'})
+        
+        # Save to volume-backed feedback file
+        data_dir = get_data_dir()
+        feedback_file = os.path.join(data_dir, 'user_feedback.json')
+        append_json_array(feedback_file, feedback_data)
+        return jsonify({'success': True, 'message': 'Feedback recorded successfully', 'file': feedback_file})
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/admin/feedback', methods=['GET'])
-def admin_feedback():
-    """Return stored feedback JSON directly for quick inspection.
-
-    Response shape: { path: str, count: int|None, data: list|object }
-    """
-    try:
-        path = FEEDBACK_FILE
-        data = []
-        if os.path.exists(path):
-            data = _read_feedback_records(path)
-        else:
-            # Fallback check legacy path if current path missing
-            legacy = 'user_feedback.json'
-            if os.path.exists(legacy):
-                data = _read_feedback_records(legacy)
-                path = legacy
-        count = len(data)
-        return jsonify({ 'path': path, 'count': count, 'data': data })
-
-@app.route('/admin/run_logs', methods=['GET'])
-def admin_run_logs():
-    """Return recent run_web logs for a session. Params: session_id, tail (int)"""
-    try:
-        session_id = request.args.get('session_id', 'default')
-        tail = int(request.args.get('tail', '200'))
-        path = os.path.join(LOG_DIR, f"run_{session_id}.log")
-        if not os.path.exists(path):
-            # If not found, list available
-            files = [f for f in os.listdir(LOG_DIR) if f.startswith('run_') and f.endswith('.log')]
-            return jsonify({ 'error': 'log not found', 'path': path, 'available': files }), 404
-        # Tail last N lines
-        lines = []
-        with open(path, 'r') as f:
-            lines = f.readlines()[-tail:]
-        return jsonify({ 'path': path, 'lines': lines })
-    except Exception as e:
-        return jsonify({ 'error': str(e) }), 500
-    except Exception as e:
-        return jsonify({ 'error': str(e), 'path': FEEDBACK_FILE }), 500
 
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist

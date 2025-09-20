@@ -24,14 +24,13 @@ using namespace std;
 int main(int argc, char *argv[]){
     // Default parameters
     char *input = (char*)"car.txt";
-// Allow tuning via environment variables to reduce memory/CPU on constrained hosts
-int size = getenv("HD_SIZE") ? atoi(getenv("HD_SIZE")) : 2;
-int d_prime = getenv("HD_D_PRIME") ? atoi(getenv("HD_D_PRIME")) : 3;
-int d_hat = getenv("HD_D_HAT") ? atoi(getenv("HD_D_HAT")) : 7;
-int d_hat_2 = getenv("HD_D_HAT2") ? atoi(getenv("HD_D_HAT2")) : 6;
-int K = getenv("HD_K") ? atoi(getenv("HD_K")) : 10;
-int d_bar = getenv("HD_D_BAR") ? atoi(getenv("HD_D_BAR")) : 5;
-int num_questions = getenv("HD_NUM_QUESTIONS") ? atoi(getenv("HD_NUM_QUESTIONS")) : 100;
+    int size = 2;
+    int d_prime = 3;
+    int d_hat = 7;
+    int d_hat_2 = 6;
+    int K = 10;
+    int d_bar = 5;
+    int num_questions = 100;
     int num_quest_init = num_questions;
     
     // Algorithm parameters
