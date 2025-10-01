@@ -1,6 +1,9 @@
 #include "highdim.h"
 #include <algorithm>
 #include <iterator>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 
 highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, int size, int d_bar, int d_hat, int d_hat_2, point_t* u, int K, int s, double epsilon, int maxRound, double& Qcount, double& Csize, int cmp_option, int stop_option, int prune_option, int dom_option, int& num_questions){
@@ -15,6 +18,51 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
     // Initialize question mapping to record all questions asked
     // question_mapping qm;
     
+    // Helper lambdas to append a simple phase record to user_feedback.json
+    auto trim = [](const std::string& s) {
+        size_t a = s.find_first_not_of(" \t\n\r");
+        if (a == std::string::npos) return std::string("");
+        size_t b = s.find_last_not_of(" \t\n\r");
+        return s.substr(a, b - a + 1);
+    };
+    auto append_phase_record = [&](int phase){
+        const std::string filepath = "user_feedback.json";
+        std::ifstream in(filepath);
+        std::string content;
+        if (in.good()) {
+            std::ostringstream buffer; buffer << in.rdbuf(); content = buffer.str();
+        }
+        in.close();
+        std::string trimmed = trim(content);
+        if (trimmed.empty()) trimmed = "[]";
+        // Attach/overwrite phase on the last record object
+        size_t arr_end = trimmed.rfind(']');
+        if (arr_end == std::string::npos) return;
+        size_t obj_start = trimmed.find_last_of('{', arr_end);
+        size_t obj_end = trimmed.find_last_of('}', arr_end);
+        if (obj_start == std::string::npos || obj_end == std::string::npos || obj_end < obj_start) return;
+        std::string obj = trimmed.substr(obj_start, obj_end - obj_start + 1);
+        size_t key = obj.find("\"phase\"");
+        if (key == std::string::npos) {
+            bool needs_comma = false;
+            for (size_t p = 1; p + 1 < obj.size(); ++p) if (obj[p] == ':') { needs_comma = true; break; }
+            std::ostringstream ins; ins << (needs_comma ? "," : "") << "\"phase\":" << phase;
+            obj.insert(obj.size()-1, ins.str());
+        } else {
+            size_t colon = obj.find(':', key);
+            if (colon != std::string::npos) {
+                size_t val_begin = colon + 1; while (val_begin < obj.size() && obj[val_begin] == ' ') ++val_begin;
+                size_t val_end = val_begin; while (val_end < obj.size() && obj[val_end] != ',' && obj[val_end] != '}') ++val_end;
+                std::ostringstream val; val << " " << phase;
+                obj.replace(val_begin, val_end - val_begin, val.str());
+            }
+        }
+        std::string out_doc = trimmed.substr(0, obj_start) + obj + trimmed.substr(obj_end + 1);
+        std::ofstream o(filepath, std::ios::trunc); o << out_doc; o.close();
+    };
+
+    int stop_phase = 0; // 0 means not stopped early; 1/2 indicate stopping phase
+
     // phase 1: narrow down the dimensions
     printf("Phase 1: Initializing dimension selection...\n");
 	// store the dimensions if the user is interested in at least one in the set
@@ -38,6 +86,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
         int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
         if (maxIdx == -99) {
             keep_answer = false;
+            stop_phase = 1;
             release_point_set(S, true);
             selected_dimensions_i.clear();  
             break;
@@ -93,6 +142,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                 int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
                 if (maxIdx == -99) {
                     keep_answer = false;
+                    stop_phase = 2;
                     release_point_set(S, true);
                     selected_dimensions_i.clear();  
                     break;
@@ -148,6 +198,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                 id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
                 if (maxIdx == -99) {
                     keep_answer = false;
+                    stop_phase = 2;
                     release_point_set(S, true);
                     selected_dimensions_i.clear();  
                     break;
@@ -238,6 +289,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                                 id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
                                 if (maxIdx == -99) {
                                     keep_answer = false;
+                                    stop_phase = 2;
                                     release_point_set(S, true);
                                     selected_dimensions_i.clear();  
                                     break;
@@ -281,6 +333,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                         id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
                         if (maxIdx == -99) {
                             keep_answer = false;
+                            stop_phase = 2;
                             release_point_set(S, true);
                             selected_dimensions_i.clear();  
                             break;
@@ -413,6 +466,13 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
     auto end_time_3 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration_3 = end_time_3 - start_time_3;
     time_3 = duration_3.count();
+    // If the user stopped early, record the phase; otherwise phase 3
+    if (!keep_answer && stop_phase >= 1) {
+        append_phase_record(stop_phase);
+    } else {
+        append_phase_record(3);
+    }
+
     //also return the information about the dimensions chosen, as stored in set_final_dimensions
     highdim_output* output = new highdim_output;
     output->S = S_output;

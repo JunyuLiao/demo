@@ -104,6 +104,14 @@
             background: #c0392b;
         }
         
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
         .main-content {
             padding: 20px;
         }
@@ -198,6 +206,26 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
         
+        /* Compact Not Interested card, full width like options */
+        .option-card.skip-option {
+            background: #6c757d; /* match secondary button */
+            border-color: #6c757d;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 70px;
+        }
+        .option-card.skip-option:hover {
+            filter: brightness(0.95);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .skip-text {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+        
         .option-header {
             display: flex;
             justify-content: space-between;
@@ -221,53 +249,36 @@
         }
         
         .dimensions-grid {
-            display: flex;
-            flex-wrap: nowrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 180px));
             gap: 15px;
-            align-items: center;
-            overflow-x: auto;
-            overflow-y: hidden;
+            align-items: stretch;
+            overflow: visible;
             padding: 5px 0;
         }
         
         .dimension-item {
             background: #f8f9fa;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 6px;
             text-align: center;
             border: 1px solid #e9ecef;
-            min-width: 80px;
-            flex-shrink: 0;
+            width: 180px;
+            box-sizing: border-box;
         }
         
-        .dimensions-grid::-webkit-scrollbar {
-            height: 6px;
-        }
         
-        .dimensions-grid::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-        }
-        
-        .dimensions-grid::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 3px;
-        }
-        
-        .dimensions-grid::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.5);
-        }
-        
-        /* Firefox scrollbar for dimensions grid */
-        .dimensions-grid {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
-        }
         
         .dimension-label {
             font-size: 0.8em;
             color: #6c757d;
             margin-bottom: 4px;
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 32px;
         }
         
         .dimension-value {
@@ -337,8 +348,10 @@
             width: 100%;
             max-width: 100%;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 10px;
             min-height: 60px;
             box-sizing: border-box;
             overflow: hidden;
@@ -367,36 +380,76 @@
         .recommendation-dims {
             font-size: 0.9em;
             opacity: 0.9;
-            white-space: nowrap;
+        }
+
+        .recommendation-dims-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 12px;
             overflow-x: auto;
             overflow-y: hidden;
-            flex: 1;
-            min-width: 0;
-            max-width: calc(100% - 120px);
             padding: 5px 0;
-            margin-left: 10px;
+        }
+
+        .recommendation-dim-item {
+            background: #ffffff;
+            border: 1px solid rgba(16, 24, 40, 0.08);
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-width: 200px;
+            text-align: center;
+            flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .recommendation-dim-item:hover {
+            box-shadow: 0 4px 14px rgba(16, 24, 40, 0.12);
+            transform: translateY(-1px);
+        }
+
+        /* High-contrast text inside recommendation blocks */
+        .recommendation-dim-item .dimension-label {
+            color: #6b7280; /* gray-500 */
+            font-weight: 600;
+            font-size: 0.82em;
+            letter-spacing: 0.02em;
+            margin-bottom: 6px;
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 32px;
+        }
+
+        .recommendation-dim-item .dimension-value {
+            color: #111827; /* gray-900 */
+            font-weight: 800;
+            font-size: 1.1em;
+            letter-spacing: 0.2px;
         }
         
-        .recommendation-dims::-webkit-scrollbar {
+        .recommendation-dims-grid::-webkit-scrollbar {
             height: 6px;
         }
         
-        .recommendation-dims::-webkit-scrollbar-track {
+        .recommendation-dims-grid::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 3px;
         }
         
-        .recommendation-dims::-webkit-scrollbar-thumb {
+        .recommendation-dims-grid::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.5);
             border-radius: 3px;
         }
         
-        .recommendation-dims::-webkit-scrollbar-thumb:hover {
+        .recommendation-dims-grid::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.7);
         }
         
         /* Firefox scrollbar */
-        .recommendation-dims {
+        .recommendation-dims-grid {
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.2);
         }
@@ -512,20 +565,18 @@
             <div id="questionSection" class="question-section hidden">
                 <div class="question-title">Please choose the option you favor more:</div>
                 <div class="instruction-text">
-                    <p>• Click on the option you prefer, or enter the option number in the input field below</p>
-                    <p>• Consider the information presented, if none of the attributes make sense to you, enter 0 to skip this question</p>
-                    <p>• You can scroll horizontally on each option to see all information if necessary</p>
+                    <p>• This is a dataset of different models of car, each described by 57 attributes</p>
+                    <p>• In each question, click on the option you prefer</p>
+                    <p>• Consider the information presented, if none of the attributes make sense to you, click "Not Interested" to skip the question</p>
                     <p>• If tired of answering more questions, click "Stop & Get Results" get recommendations immediately based on the current preferences learned</p>
-                    <p>Note: Since the dataset is real, some of the data may be missing. Enter 0 to skip the question in this case.</p>
+                    <p>Note: Since the dataset is real, some of the data may be missing. Just skip the question if this is case</p>
                 </div>
                 <div id="optionsContainer" class="options-container"></div>
             <div id="inputSection" class="input-section">
-                <div class="input-group">
-                        <input type="text" id="userInput" placeholder="Enter your choice" />
-                        <button id="sendBtn">Submit Choice</button>
-                        <button id="stopEarlyBtn" class="btn-danger" style="margin-left: 10px;">Stop & Get Results</button>
+                <div style="text-align: center;">
+                        <button id="stopEarlyBtn" class="btn-danger">Stop & Get Results</button>
                     </div>
-                        <div style="margin-top: 8px; color: #6c757d; font-size: 0.9em;">
+                        <div style="margin-top: 8px; color: #6c757d; font-size: 0.9em; text-align: center;">
                             If you answer all questions, you are guaranteed to get your favorite option; 
                             if you stopped early, the system may need to output a set of recommendations (instead of a single one) to ensure accuracy.
                         </div>
@@ -557,12 +608,13 @@
         const finalRecommendations = document.getElementById('finalRecommendations');
         const recommendationsContainer = document.getElementById('recommendationsContainer');
         const loadingSection = document.getElementById('loadingSection');
-        const userInput = document.getElementById('userInput');
+        const userInput = null; // input removed; we submit programmatically
         const startBtn = document.getElementById('startBtn');
         const sendBtn = document.getElementById('sendBtn');
         const inputSection = document.getElementById('inputSection');
         const statusIndicator = document.getElementById('statusIndicator');
         const stopEarlyBtn = document.getElementById('stopEarlyBtn');
+        const skipBtn = null; // bottom skip button removed
         
         let isRunning = false;
         let pollInterval = null;
@@ -571,6 +623,7 @@
         let currentOptions = []; // Store current options data
         let dimensionMap = {}; // Store dimension ID to name mapping
         let lastOutputHash = ''; // Store hash of last output to avoid unnecessary updates
+        let preservedScrollY = 0; // Preserve scroll position across updates
         
         // Session management
         let sessionId = sessionStorage.getItem('sessionId');
@@ -583,28 +636,39 @@
 
         // Event listeners
         startBtn.addEventListener('click', startAlgorithm);
-        sendBtn.addEventListener('click', sendInput);
+        if (sendBtn) sendBtn.addEventListener('click', sendInput);
         stopEarlyBtn.addEventListener('click', stopEarly);
         
         
         // Enter key support for input
-        userInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendInput();
-            }
+        // input removed; keep keyboard shortcuts at document level
+        document.addEventListener('keypress', function(e) {
+            if (!isRunning) return;
+            if (e.key === '1') sendChoice(1);
+            if (e.key === '2') sendChoice(2);
+            if (e.key === '0') skipQuestion();
+            if (e.key === 'Enter') return; // ignore
         });
         
         // Functions
-        
-        
+
+        function preserveScroll() {
+            preservedScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+        }
+
+        function restoreScroll() {
+            if (typeof preservedScrollY === 'number') {
+                window.scrollTo(0, preservedScrollY);
+            }
+        }
+
         function setStatus(status) {
             statusIndicator.className = 'status-indicator status-' + status;
             statusIndicator.textContent = status.charAt(0).toUpperCase() + status.slice(1);
             
             isRunning = (status === 'running');
             startBtn.disabled = isRunning;
-            userInput.disabled = !isRunning;
-            sendBtn.disabled = !isRunning;
+            if (sendBtn) sendBtn.disabled = !isRunning;
             stopEarlyBtn.disabled = !isRunning;
         }
         
@@ -612,7 +676,8 @@
             questionSection.classList.remove('hidden');
             finalRecommendations.classList.add('hidden');
             loadingSection.classList.add('hidden');
-            userInput.focus();
+            // no input to focus
+            restoreScroll();
         }
         
         function showFinalRecommendations() {
@@ -631,6 +696,7 @@
             if (loadingText) {
                 loadingText.textContent = message;
             }
+            restoreScroll();
         }
         
         function parseOptionsFromOutput(lines) {
@@ -802,6 +868,15 @@
             optionsContainer.innerHTML = '';
             currentOptions = options;
             
+            // Add a large grey "Not Interested" card at the top
+            const skipCard = document.createElement('div');
+            skipCard.className = 'option-card skip-option';
+            skipCard.onclick = () => skipQuestion();
+            skipCard.innerHTML = `
+                <div class="skip-text">Not Interested</div>
+            `;
+            optionsContainer.appendChild(skipCard);
+
             options.forEach((option, index) => {
                 const optionCard = document.createElement('div');
                 optionCard.className = 'option-card';
@@ -841,6 +916,7 @@
                         grid.scrollLeft = scrollPositions[index];
                     }
                 });
+                restoreScroll();
             }, 10);
         }
         
@@ -858,17 +934,28 @@
                 const recCard = document.createElement('div');
                 recCard.className = 'recommendation-card';
                 
-                // Format dimension-value pairs using actual dimension names
-                const dimValueText = rec.dimensions.map(dim => 
-                    `${getDimensionName(dim.dimension)}: ${dim.value.toFixed(3)}`
-                ).join(' | ');
+                // Build dimension blocks
+                const dimBlocks = rec.dimensions.map(dim => {
+                    const name = getDimensionName(dim.dimension);
+                    const value = dim.value.toFixed(3);
+                    return `
+                        <div class="recommendation-dim-item">
+                            <div class="dimension-label">${name}:</div>
+                            <div class="dimension-value">${value}</div>
+                        </div>
+                    `;
+                }).join('');
                 
                 recCard.innerHTML = `
                     <div class="recommendation-header">
                         <div class="recommendation-name">Option ${rec.id}</div>
                         <div class="recommendation-id">#${rec.id}</div>
                     </div>
-                    <div class="recommendation-dims">${dimValueText}</div>
+                    <div class="recommendation-dims">
+                        <div class="recommendation-dims-grid">
+                            ${dimBlocks}
+                        </div>
+                    </div>
                 `;
                 
                 recommendationsContainer.appendChild(recCard);
@@ -882,6 +969,7 @@
                         dims.scrollLeft = scrollPositions[index];
                     }
                 });
+                restoreScroll();
             }, 10);
             
             // Track study completion
@@ -936,15 +1024,48 @@
             // Add selection to clicked card
             document.querySelectorAll('.option-card')[index].classList.add('selected');
             
-            // Auto-fill input with choice
-            userInput.value = (index + 1).toString();
+            // Submit immediately
+            sendChoice(index + 1);
         }
         
         
         function stopEarly() {
             // Send -99 to stop the algorithm early
-            userInput.value = '-99';
-            sendInput();
+            sendChoice(-99);
+        }
+
+        function skipQuestion() {
+            // Send 0 to skip this question
+            sendChoice(0);
+        }
+        
+        function sendChoice(value) {
+            const num = Number(value);
+            const maxOption = currentOptions.length;
+            if (!Number.isInteger(num) || !(num === -99 || (num >= 0 && num <= maxOption))) {
+                return;
+            }
+            preserveScroll();
+            fetch('/send_input', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ input: String(num), session_id: sessionId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (num !== -99) {
+                        actualAnsweredCount++;
+                        const counterElement = document.getElementById('questionsCounter');
+                        if (counterElement) {
+                            counterElement.textContent = actualAnsweredCount;
+                        }
+                    }
+                    showLoading();
+                    restoreScroll();
+                }
+            })
+            .catch(error => console.error('Error sending input:', error));
         }
         
         function loadDimensionMap() {
@@ -1127,45 +1248,7 @@
         }
         
         
-        function sendInput() {
-            const input = userInput.value.trim();
-            if (!input) return;
-            const num = Number(input);
-            const maxOption = currentOptions.length;
-            if (!Number.isInteger(num) || !(num === -99 || (num >= 0 && num <= maxOption))) {
-                alert('Please enter a valid input');
-                return;
-            }
-            
-            fetch('/send_input', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ input: input, session_id: sessionId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    userInput.value = '';
-                    
-                    // Only increment the counter if it's not a stop command (-99)
-                    if (input !== '-99') {
-                        actualAnsweredCount++;
-                        const counterElement = document.getElementById('questionsCounter');
-                        if (counterElement) {
-                            counterElement.textContent = actualAnsweredCount;
-                        }
-                    }
-                    
-                    // Show loading while processing next question
-                    showLoading();
-                }
-            })
-            .catch(error => {
-                console.error('Error sending input:', error);
-            });
-        }
+        // sendInput() no longer used (input removed); replaced by sendChoice()
         
         
         

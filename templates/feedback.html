@@ -223,15 +223,19 @@
         <div class="content">
             <div class="feedback-question">
                 <h2>Algorithm Performance Rating</h2>
-                <p>Most existing algorithms are not capable of discovering your favorite option among high-dimensional data. For those that can, the number of questions required may exceed 1000. Therefore, those algorithms are not presented in this demo.</p>
-                <p><strong>Based on this, as well as your experience with our algorithm, how would you rate it on a scale of 1-10?</strong></p>
+                <p>Based on your actual experience as well as the quality of the final recommendation, please rate our algorithm.</p>
+                <p>There exists another algorithm that's also capable of discovering your favorite option among high-dimensional data. However, it requires more than 1000 questions to get the same recommendation result, thus the demo of that algorithms is not provided. Based on this, to what extent would you accept that algorithm?</p>
             </div>
             
             <div class="rating-section">
-                <h3>Your Rating</h3>
+                <h3>Your Ratings</h3>
                 <div class="rating-input-container">
-                    <label for="rating" class="rating-label">Rating:</label>
-                    <input type="number" id="rating" class="rating-input" min="1" max="10" placeholder="1-10">
+                    <label for="rating1" class="rating-label">Our Algorithm:</label>
+                    <input type="number" id="rating1" class="rating-input" min="1" max="10" placeholder="1-10">
+                </div>
+                <div class="rating-input-container">
+                    <label for="rating2" class="rating-label">Existing Algorithm:</label>
+                    <input type="number" id="rating2" class="rating-input" min="1" max="10" placeholder="1-10">
                 </div>
                 <div class="rating-scale">Scale: 1 (Poor) to 10 (Excellent)</div>
             </div>
@@ -255,7 +259,8 @@
         }
         
         function submitFeedback() {
-            const rating = document.getElementById('rating').value;
+            const rating1 = document.getElementById('rating1').value;
+            const rating2 = document.getElementById('rating2').value;
             const submitButton = document.getElementById('submitButton');
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
@@ -264,9 +269,9 @@
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
             
-            // Validate rating
-            if (!rating || rating < 1 || rating > 10) {
-                errorMessage.textContent = 'Please enter a valid rating between 1 and 10.';
+            // Validate ratings
+            if (!rating1 || rating1 < 1 || rating1 > 10 || !rating2 || rating2 < 1 || rating2 > 10) {
+                errorMessage.textContent = 'Please enter two valid ratings between 1 and 10.';
                 errorMessage.style.display = 'block';
                 return;
             }
@@ -280,7 +285,8 @@
             
             // Prepare feedback data
             const feedbackData = {
-                rating: parseInt(rating),
+                rating1: parseInt(rating1),
+                rating2: parseInt(rating2),
                 studyData: studyData,
                 timestamp: new Date().toISOString()
             };
@@ -323,7 +329,12 @@
         
         
         // Allow Enter key to submit
-        document.getElementById('rating').addEventListener('keypress', function(e) {
+        document.getElementById('rating1').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitFeedback();
+            }
+        });
+        document.getElementById('rating2').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 submitFeedback();
             }

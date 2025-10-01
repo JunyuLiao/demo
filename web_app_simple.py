@@ -36,6 +36,42 @@ def get_runner(session_id, create_if_missing=False):
             runner = AlgorithmRunner()
             sessions[session_id] = runner
         return runner
+# --------- Custom JSON writer to keep each interaction on one line ---------
+def write_sessions_with_singleline_interactions(records, filepath):
+    try:
+        lines = ['[']
+        for idx, rec in enumerate(records):
+            lines.append('  {')
+            # Write non-interaction keys first, preserving order
+            items = [(k, v) for k, v in rec.items() if k != 'interaction']
+            for i, (k, v) in enumerate(items):
+                import json as _json
+                key = _json.dumps(k)
+                val = _json.dumps(v, ensure_ascii=False)
+                comma = ',' if (i < len(items) - 1 or ('interaction' in rec)) else ''
+                lines.append(f'    {key}: {val}{comma}')
+            # Write interaction array with one-line objects
+            if 'interaction' in rec and isinstance(rec['interaction'], list):
+                lines.append('    "interaction": [')
+                for j, item in enumerate(rec['interaction']):
+                    import json as _json
+                    item_str = _json.dumps(item, separators=(',', ':'), ensure_ascii=False)
+                    comma = ',' if j < len(rec['interaction']) - 1 else ''
+                    lines.append(f'      {item_str}{comma}')
+                lines.append('    ]')
+            lines.append('  }' + (',' if idx < len(records) - 1 else ''))
+        lines.append(']')
+        with open(filepath, 'w') as f:
+            f.write('\n'.join(lines) + ('\n' if lines and not lines[-1].endswith('\n') else ''))
+    except Exception:
+        # Fallback: dump compact if custom formatting fails
+        try:
+            import json as _json
+            with open(filepath, 'w') as f:
+                _json.dump(records, f)
+        except Exception:
+            pass
+
 
 # --------- Data storage helpers (volume-aware) ---------
 def get_data_dir():
@@ -204,6 +240,36 @@ def start_algorithm():
         time.sleep(0.2)
 
     success, message = runner.start_algorithm(dataset, use_real)
+
+    # Initialize a new session record with an empty interaction array so that
+    # C++ interaction appends target the correct, current record.
+    try:
+        data_dir = get_data_dir()
+        feedback_file = os.path.join(data_dir, 'user_feedback.json')
+        try:
+            with open(feedback_file, 'r') as f:
+                existing = json.load(f)
+        except Exception:
+            existing = []
+
+        if not isinstance(existing, list):
+            existing = []
+
+        # Only append a new skeleton if the last record already has core fields,
+        # or file is empty. This avoids creating multiple skeletons in a row.
+        need_new = True
+        if len(existing) > 0 and isinstance(existing[-1], dict):
+            last = existing[-1]
+            if 'interaction' in last and not (('startTime' in last) or ('rating' in last) or ('ip' in last)):
+                need_new = False
+        if need_new:
+            existing.append({'interaction': []})
+
+        write_sessions_with_singleline_interactions(existing, feedback_file)
+    except Exception:
+        # Non-fatal: continue even if logging init fails
+        pass
+
     return jsonify({'success': success, 'message': message})
 
 @app.route('/send_input', methods=['POST'])
@@ -313,9 +379,10 @@ def submit_feedback():
     try:
         data = request.get_json() or {}
         
-        # Validate rating
-        rating = data.get('rating')
-        if not rating or rating < 1 or rating > 10:
+        # Validate ratings
+        rating1 = data.get('rating1')
+        rating2 = data.get('rating2')
+        if (not rating1 or rating1 < 1 or rating1 > 10) or (not rating2 or rating2 < 1 or rating2 > 10):
             return jsonify({'success': False, 'error': 'Invalid rating'}), 400
         
         # Extract study info
@@ -333,15 +400,39 @@ def submit_feedback():
             'startTime': start_time,
             'endTime': end_time,
             'questions': questions,
-            'rating': rating,
+            'rating1': rating1,
+            'rating2': rating2,
             'ip': ip,
             'submission_time': datetime.now().isoformat()
         }
         
-        # Save only to feedback.json in DATA_DIR (/data)
+        # Merge this feedback into the latest session record so that
+        # startTime/endTime/questions/ip/rating live at the same level as
+        # the "interaction" array collected during the run.
         data_dir = get_data_dir()
         feedback_file = os.path.join(data_dir, 'user_feedback.json')
-        append_json_array(feedback_file, record)
+
+        # Load existing array (or create if missing)
+        try:
+            with open(feedback_file, 'r') as f:
+                existing = json.load(f)
+        except Exception:
+            existing = []
+
+        # Decide whether to update the last record or append a new one
+        if isinstance(existing, list) and len(existing) > 0 and isinstance(existing[-1], dict):
+            last = existing[-1]
+            # If last record doesn't yet have core fields, treat it as the current session
+            if 'startTime' not in last and 'rating' not in last:
+                last.update(record)
+            else:
+                existing.append(record)
+        else:
+            existing = [record]
+
+        # Persist with one-line interactions
+        write_sessions_with_singleline_interactions(existing, feedback_file)
+
         return jsonify({'success': True, 'message': 'Feedback recorded successfully', 'file': feedback_file})
         
     except Exception as e:
