@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 
 
 highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, int size, int d_bar, int d_hat, int d_hat_2, point_t* u, int K, int s, double epsilon, int maxRound, double& Qcount, double& Csize, int cmp_option, int stop_option, int prune_option, int dom_option, int& num_questions){
@@ -26,7 +27,10 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
         return s.substr(a, b - a + 1);
     };
     auto append_phase_record = [&](int phase){
-        const std::string filepath = "user_feedback.json";
+        const char* dir = std::getenv("DATA_DIR");
+        std::string base = (dir && *dir) ? std::string(dir) : std::string("/data");
+        if (!base.empty() && base.back() == '/') base.pop_back();
+        const std::string filepath = base + "/user_feedback.json";
         std::ifstream in(filepath);
         std::string content;
         if (in.good()) {

@@ -4,6 +4,14 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
+
+static std::string get_feedback_filepath() {
+    const char* dir = std::getenv("DATA_DIR");
+    std::string base = (dir && *dir) ? std::string(dir) : std::string("/data");
+    if (!base.empty() && base.back() == '/') base.pop_back();
+    return base + "/user_feedback.json";
+}
 
 static std::string join_ints(const std::vector<int>& values) {
     std::ostringstream oss;
@@ -24,7 +32,7 @@ static std::string trim(const std::string& s) {
 static void append_interaction_record(const std::vector<int>& ids,
                                       const std::vector<int>& attributes,
                                       int answer) {
-    const std::string filepath = "user_feedback.json";
+    const std::string filepath = get_feedback_filepath();
 
     // Read existing file (if any)
     std::ifstream in(filepath);
