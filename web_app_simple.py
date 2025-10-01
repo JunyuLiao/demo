@@ -241,8 +241,7 @@ def start_algorithm():
 
     success, message = runner.start_algorithm(dataset, use_real)
 
-    # Initialize a new session record with an empty interaction array so that
-    # C++ interaction appends target the correct, current record.
+    # Initialize a per-session scratch file path for interactions
     try:
         data_dir = get_data_dir()
         feedback_file = os.path.join(data_dir, 'user_feedback.json')
@@ -263,9 +262,15 @@ def start_algorithm():
             if 'interaction' in last and not (('startTime' in last) or ('rating' in last) or ('ip' in last)):
                 need_new = False
         if need_new:
-            existing.append({'interaction': []})
+            # Just append an empty stub to mark a new session; interactions will
+            # accumulate in DATA_DIR/sessions/<SESSION_ID>.json until feedback is submitted
+            existing.append({})
 
         write_sessions_with_singleline_interactions(existing, feedback_file)
+
+        # Export SESSION_ID to the C++ process via environment so it can write to
+        # DATA_DIR/sessions/<SESSION_ID>.json. (Already set in browser, but ensure env var exists here too.)
+        os.environ['SESSION_ID'] = session_id
     except Exception:
         # Non-fatal: continue even if logging init fails
         pass
@@ -418,6 +423,26 @@ def submit_feedback():
                 existing = json.load(f)
         except Exception:
             existing = []
+
+        # Merge interactions from the per-session scratch file, then clear it
+        try:
+            sessions_dir = os.path.join(get_data_dir(), 'sessions')
+            os.makedirs(sessions_dir, exist_ok=True)
+            session_file = os.path.join(sessions_dir, os.environ.get('SESSION_ID', 'default') + '.json')
+            interactions = []
+            if os.path.exists(session_file):
+                with open(session_file, 'r') as sf:
+                    tmp_obj = json.load(sf)
+                    interactions = tmp_obj.get('interaction', []) if isinstance(tmp_obj, dict) else []
+                # Clear the session scratch after reading
+                try:
+                    os.remove(session_file)
+                except Exception:
+                    pass
+            if interactions:
+                record['interaction'] = interactions
+        except Exception:
+            pass
 
         # Decide whether to update the last record or append a new one
         if isinstance(existing, list) and len(existing) > 0 and isinstance(existing[-1], dict):

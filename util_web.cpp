@@ -5,12 +5,21 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <sys/stat.h>
 
-static std::string get_feedback_filepath() {
+static void ensure_dir(const std::string& path) {
+    mkdir(path.c_str(), 0755);
+}
+
+static std::string get_session_filepath() {
     const char* dir = std::getenv("DATA_DIR");
     std::string base = (dir && *dir) ? std::string(dir) : std::string("/data");
     if (!base.empty() && base.back() == '/') base.pop_back();
-    return base + "/user_feedback.json";
+    const char* sid = std::getenv("SESSION_ID");
+    std::string sessionId = sid ? std::string(sid) : std::string("default");
+    std::string folder = base + "/sessions";
+    ensure_dir(folder);
+    return folder + "/" + sessionId + ".json";
 }
 
 static std::string join_ints(const std::vector<int>& values) {
@@ -32,7 +41,7 @@ static std::string trim(const std::string& s) {
 static void append_interaction_record(const std::vector<int>& ids,
                                       const std::vector<int>& attributes,
                                       int answer) {
-    const std::string filepath = get_feedback_filepath();
+    const std::string filepath = get_session_filepath();
 
     // Read existing file (if any)
     std::ifstream in(filepath);
@@ -53,48 +62,36 @@ static void append_interaction_record(const std::vector<int>& ids,
          << "],\"attribute\":[" << join_ints(attributes)
          << "],\"answer\":" << answer << "}";
 
+    // Session file is a single JSON object accumulating interaction and phase
     std::string out_doc;
-    if (trimmed == "[]") {
-        // If no skeleton present (should be created at start), create one
-        out_doc = "[\n{\"interaction\":[" + item.str() + "]}\n]";
+    if (trimmed.empty()) trimmed = "{}";
+    if (trimmed.front() != '{') trimmed = "{}";
+    std::string obj = trimmed;
+    size_t inter_pos = obj.find("\"interaction\"");
+    if (inter_pos == std::string::npos) {
+        bool needs_comma = obj.find(':') != std::string::npos;
+        std::string insertion = std::string(needs_comma ? "," : "") + "\"interaction\":[" + item.str() + "]";
+        obj.insert(obj.size() - 1, insertion);
+        out_doc = obj;
     } else {
-        // Find the last top-level interaction array and append robustly
-        size_t key_pos = trimmed.rfind("\"interaction\"");
-        if (key_pos == std::string::npos) {
-            // Fallback: add a new record with interaction
-            size_t end_arr = trimmed.rfind(']');
-            if (end_arr == std::string::npos) {
-                out_doc = "[\n{\"interaction\":[" + item.str() + "]}\n]";
-            } else {
-                out_doc = trimmed.substr(0, end_arr) + ",\n{\"interaction\":[" + item.str() + "]}\n]";
-            }
+        size_t open_br = obj.find('[', inter_pos);
+        if (open_br == std::string::npos) {
+            std::string insertion = ",\"interaction\":[" + item.str() + "]";
+            obj.insert(obj.size() - 1, insertion);
+            out_doc = obj;
         } else {
-            size_t open_br = trimmed.find('[', key_pos);
-            if (open_br == std::string::npos) {
-                // Insert fresh array before the closing brace of last object
-                size_t end_arr = trimmed.rfind('}');
-                if (end_arr == std::string::npos) {
-                    out_doc = trimmed; // give up silently
-                } else {
-                    out_doc = trimmed.substr(0, end_arr) + ",\"interaction\":[" + item.str() + "]" + trimmed.substr(end_arr);
-                }
+            int depth = 1; size_t i = open_br + 1;
+            for (; i < obj.size(); ++i) {
+                char ch = obj[i];
+                if (ch == '[') depth++; else if (ch == ']') { depth--; if (depth == 0) break; }
+            }
+            if (i >= obj.size()) {
+                out_doc = obj;
             } else {
-                // Find the matching closing bracket for the interaction array, accounting for nested arrays
-                int depth = 1;
-                size_t i = open_br + 1;
-                for (; i < trimmed.size(); ++i) {
-                    char ch = trimmed[i];
-                    if (ch == '[') depth++;
-                    else if (ch == ']') { depth--; if (depth == 0) break; }
-                }
-                if (i >= trimmed.size()) {
-                    out_doc = trimmed; // malformed
-                } else {
-                    std::string inside = trimmed.substr(open_br + 1, i - open_br - 1);
-                    std::string trimmed_inside = trim(inside);
-                    std::string to_insert = trimmed_inside.empty() ? item.str() : ("," + item.str());
-                    out_doc = trimmed.substr(0, i) + to_insert + trimmed.substr(i);
-                }
+                std::string inside = obj.substr(open_br + 1, i - open_br - 1);
+                std::string trimmed_inside = trim(inside);
+                std::string to_insert = trimmed_inside.empty() ? item.str() : ("," + item.str());
+                out_doc = obj.substr(0, i) + to_insert + obj.substr(i);
             }
         }
     }

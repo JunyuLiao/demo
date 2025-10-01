@@ -30,26 +30,17 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
         const char* dir = std::getenv("DATA_DIR");
         std::string base = (dir && *dir) ? std::string(dir) : std::string("/data");
         if (!base.empty() && base.back() == '/') base.pop_back();
-        const std::string filepath = base + "/user_feedback.json";
+        const char* sid = std::getenv("SESSION_ID");
+        std::string sessionId = sid ? std::string(sid) : std::string("default");
+        std::string filepath = base + "/sessions/" + sessionId + ".json";
         std::ifstream in(filepath);
-        std::string content;
-        if (in.good()) {
-            std::ostringstream buffer; buffer << in.rdbuf(); content = buffer.str();
-        }
+        std::string content; if (in.good()) { std::ostringstream b; b << in.rdbuf(); content = b.str(); }
         in.close();
-        std::string trimmed = trim(content);
-        if (trimmed.empty()) trimmed = "[]";
-        // Attach/overwrite phase on the last record object
-        size_t arr_end = trimmed.rfind(']');
-        if (arr_end == std::string::npos) return;
-        size_t obj_start = trimmed.find_last_of('{', arr_end);
-        size_t obj_end = trimmed.find_last_of('}', arr_end);
-        if (obj_start == std::string::npos || obj_end == std::string::npos || obj_end < obj_start) return;
-        std::string obj = trimmed.substr(obj_start, obj_end - obj_start + 1);
+        if (content.empty()) content = "{}";
+        std::string obj = content;
         size_t key = obj.find("\"phase\"");
         if (key == std::string::npos) {
-            bool needs_comma = false;
-            for (size_t p = 1; p + 1 < obj.size(); ++p) if (obj[p] == ':') { needs_comma = true; break; }
+            bool needs_comma = obj.find(':') != std::string::npos;
             std::ostringstream ins; ins << (needs_comma ? "," : "") << "\"phase\":" << phase;
             obj.insert(obj.size()-1, ins.str());
         } else {
@@ -61,8 +52,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                 obj.replace(val_begin, val_end - val_begin, val.str());
             }
         }
-        std::string out_doc = trimmed.substr(0, obj_start) + obj + trimmed.substr(obj_end + 1);
-        std::ofstream o(filepath, std::ios::trunc); o << out_doc; o.close();
+        std::ofstream o(filepath, std::ios::trunc); o << obj; o.close();
     };
 
     int stop_phase = 0; // 0 means not stopped early; 1/2 indicate stopping phase
