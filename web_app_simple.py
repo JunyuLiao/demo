@@ -124,6 +124,9 @@ class AlgorithmRunner:
                 if result.returncode != 0:
                     return False, f"Build failed: {result.stderr}"
             
+            # Prepare environment for subprocess (propagate DATA_DIR and SESSION_ID)
+            env_vars = os.environ.copy()
+
             # Start the algorithm process with the specified dataset
             self.process = subprocess.Popen(
                 ["./run_web", dataset_path],
@@ -132,7 +135,8 @@ class AlgorithmRunner:
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
-                universal_newlines=True
+                universal_newlines=True,
+                env=env_vars
             )
             
             self.is_running = True
@@ -239,6 +243,8 @@ def start_algorithm():
         runner.stop_algorithm()
         time.sleep(0.2)
 
+    # Ensure SESSION_ID is exported before starting subprocess
+    os.environ['SESSION_ID'] = session_id
     success, message = runner.start_algorithm(dataset, use_real)
 
     # Initialize a per-session scratch file path for interactions
@@ -268,9 +274,7 @@ def start_algorithm():
 
         write_sessions_with_singleline_interactions(existing, feedback_file)
 
-        # Export SESSION_ID to the C++ process via environment so it can write to
-        # DATA_DIR/sessions/<SESSION_ID>.json. (Already set in browser, but ensure env var exists here too.)
-        os.environ['SESSION_ID'] = session_id
+        # SESSION_ID already exported above
     except Exception:
         # Non-fatal: continue even if logging init fails
         pass
