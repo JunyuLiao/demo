@@ -23,6 +23,11 @@ RUN mkdir -p /app/output /data
 # Build the web-real C++ binary
 RUN make clean && make web-real
 
+# Build the UH-Random C++ binary
+RUN g++ -w -I/usr/include --std=c++17 -Wall -Werror -pedantic \
+    main_uh_random.cpp highdim.cpp attribute_subset.cpp util.cpp \
+    other/*.c other/*.cpp -L/usr/lib -lglpk -lm -Ofast -o main_uh_random
+
 # Env for Flask port (Railway will set PORT)
 ENV PYTHONUNBUFFERED=1
 
