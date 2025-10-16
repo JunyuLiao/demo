@@ -602,6 +602,21 @@ def view_feedback():
     feedback_file = os.path.join(data_dir, 'user_feedback.json')
     return jsonify(read_json_array(feedback_file))
 
+@app.route('/clear_data', methods=['POST'])
+def clear_feedback_data():
+    """Clear all feedback data"""
+    try:
+        data_dir = get_data_dir()
+        feedback_file = os.path.join(data_dir, 'user_feedback.json')
+        
+        # Write empty array to the file
+        with open(feedback_file, 'w') as f:
+            json.dump([], f)
+        
+        return jsonify({'success': True, 'message': 'All feedback data cleared'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/data/completions.json')
 def view_completions():
     return jsonify({'error': 'Not stored'}), 404
