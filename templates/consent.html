@@ -204,32 +204,31 @@
 <body>
     <div class="consent-container">
         <div class="header">
-            <h1>High-Dimensional Regret Minimization</h1>
-            <p>an interactive system for finding your favorite option among a large database</p>
+            <h1>Efficient Recommendation System for High-Dimensional Data</h1>
+            <!-- <p>an interactive system for finding your favorite option among a large database</p> -->
         </div>
         
         <div class="content">
             <div class="study-info">
                 <h2>User Study Information</h2>
-                <p>You are invited to participate in a research study to evaluate the effectiveness of our interactive recommendation algorithm, for more robust high-dimensional preference learning systems.</p>
+                <p>You are invited to participate in a research study to evaluate the effectiveness of interactive recommendation algorithms, for more robust high-dimensional preference learning systems.</p>
                 
                 <p><strong>What you will do:</strong></p>
                 <ul>
-                    <li>Use an interactive algorithm to find your preferred options from a database of cars</li>
-                    <li>Answer a number of questions by choosing between two options</li>
-                    <li>Rate the performance of the algorithm</li>
-                    <li>The process typically takes less than 3 minutes (around 25 questions), depending on your preferences</li>
+                    <li>Experience two interactive algorithms which find your preferred options within a car database</li>
+                    <li>Rate the performance of the algorithms/mechanisms</li>
+                    <li>The process typically takes around 4 minutes</li>
                 </ul>
             </div>
             
             <div class="privacy-notice">
                 <h3>Privacy & Data Protection</h3>
                 <p>Your participation in this study is completely voluntary. You may withdraw at any time without penalty.</p>
-                <p>Your responses are not saved or stored on our servers. All data is processed locally in your browser.</p>
-                <p>We only collect anonymous usage statistics (such as number of questions answered) for research analysis.</p>
+                <p>Your responses will be stored automatically on our servers for research purpose. </p>
+                <p>We only collect anonymous usage statistics and feedback, without any personal information.</p>
             </div>
             
-            <div class="instructions">
+            <!-- <div class="instructions">
                 <h3>How to Participate</h3>
                 <ol>
                     <li>Click "Agree and Start" to begin the study</li>
@@ -239,7 +238,7 @@
                     <li>You can stop early at any time using the "Stop & Get Results" button</li>
                     <li>Review your final recommendations when the process is complete</li>
                 </ol>
-            </div>
+            </div> -->
             
             <div class="button-container">
                 <button class="start-button" onclick="startStudy()">
@@ -260,14 +259,14 @@
             sessionStorage.setItem('studyStartTime', new Date().toISOString());
             sessionStorage.setItem('autoStart', 'true'); // Flag to auto-start algorithm
             
-            // Redirect to the main algorithm page
-            window.location.href = '/';
+            // Redirect to Part I instructions page
+            window.location.href = '/part1';
         }
         
         // Check if user has already given consent
         if (sessionStorage.getItem('studyConsent') === 'true') {
-            // Redirect to main page if already consented
-            window.location.href = '/';
+            // Redirect to Part I instructions if already consented
+            window.location.href = '/part1';
         }
     </script>
 </body>

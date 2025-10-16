@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part I - User Study Instructions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .instructions-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .instructions-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .instructions-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .instructions-section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .highlight-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .highlight-box h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .highlight-box p {
+            color: #1565c0;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .highlight-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .continue-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .continue-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .continue-button:active {
+            transform: translateY(0);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .instructions-container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions-container">
+        <div class="header">
+            <h1>Part I</h1>
+            <p>Interactive Algorithm with Design Mechanism 1</p>
+        </div>
+        
+        <div class="content">
+            <div class="instructions-section">
+                <h2>Study Overview</h2>
+                <p>This is the first part of the user study. In this part, users could interact with an algorithm and identify their favorite option among a car database. The database contains more than 5000 models, each described by 57 attributes. Typically it is hard for users to consider all attributes at the same time. Therefore, this system shows only a small subset of attributes each time to ensure user friendliness.</p>
+                
+                <div class="highlight-box">
+                    <h3>How to Participate</h3>
+                    <p>Within each question, two models along with a "not interested" option will be provided. Users are expected to selected an option based on their preference. If none of the attributes make sense, simply choose "not interested" to skip the question.</p>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <button class="continue-button" onclick="startPart1()">
+                    Continue to Part I
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Click "Continue to Part I" to begin the interactive algorithm experience.</p>
+        </div>
+    </div>
+
+    <script>
+        function startPart1() {
+            // Store that user has seen Part I instructions
+            sessionStorage.setItem('part1InstructionsSeen', 'true');
+            
+            // Redirect to the main algorithm page
+            window.location.href = '/algorithm';
+        }
+        
+        // Check if user has already seen Part I instructions
+        if (sessionStorage.getItem('part1InstructionsSeen') === 'true') {
+            // Redirect to algorithm page if already seen
+            window.location.href = '/algorithm';
+        }
+    </script>
+</body>
+</html>

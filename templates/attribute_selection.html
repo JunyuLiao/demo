@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attribute Selection - High-Dimensional Regret Minimization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .selection-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .instruction-section {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .instruction-section h2 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .instruction-section p {
+            color: #1565c0;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .instruction-section ul {
+            color: #1565c0;
+            line-height: 1.6;
+            margin-left: 20px;
+        }
+
+        .instruction-section li {
+            margin-bottom: 8px;
+        }
+
+        .selection-counter {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .attribute-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .attribute-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .attribute-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .attribute-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .attribute-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+            margin-right: 50px;
+            line-height: 1.4;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .continue-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .continue-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+        }
+
+        .continue-button:active {
+            transform: translateY(0);
+        }
+
+        .continue-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .selected-attributes {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .selected-attributes h3 {
+            color: #155724;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .selected-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .selected-item {
+            background: #28a745;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remove-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .selection-container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+
+            .attributes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="selection-container">
+        <div class="header">
+            <h1>Attribute Selection</h1>
+            <p>Choose the attributes that matter the most to you</p>
+        </div>
+        
+        <div class="content">
+            <div class="instruction-section">
+                <h2>Instructions</h2>
+                <p>Please select 2-7 attributes from the list below that are most important to you when choosing a car.</p>
+                <!-- <ul>
+                    <li>Click on an attribute to select it</li>
+                    <li>You can select between 2 and 7 attributes</li>
+                    <li>Click on a selected attribute to remove it</li>
+                    <li>These attributes will be used in the next phase of the study</li>
+                </ul> -->
+            </div>
+
+            <div class="selection-counter">
+                Selected: <span id="selectionCount">0</span> / 7
+            </div>
+
+            <div id="selectedAttributes" class="selected-attributes" style="display: none;">
+                <h3>Your Selected Attributes:</h3>
+                <div id="selectedList" class="selected-list"></div>
+            </div>
+            
+            <div id="attributesGrid" class="attributes-grid"></div>
+            
+            <div class="button-container">
+                <button id="continueButton" class="continue-button" onclick="continueToAlgorithm()" disabled>
+                    Continue to Algorithm
+                </button>
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedAttributes = [];
+        let dimensionMap = {};
+
+        // Load dimension mapping
+        function loadDimensionMap() {
+            fetch('/map.json')
+            .then(response => response.json())
+            .then(data => {
+                dimensionMap = data;
+                displayAttributes();
+            })
+            .catch(error => {
+                console.error('Error loading dimension map:', error);
+                // Fallback: create a simple mapping
+                for (let i = 0; i < 57; i++) {
+                    dimensionMap[i] = `Dimension ${i}`;
+                }
+                displayAttributes();
+            });
+        }
+
+        function displayAttributes() {
+            const grid = document.getElementById('attributesGrid');
+            grid.innerHTML = '';
+
+            Object.entries(dimensionMap).forEach(([id, name]) => {
+                const card = document.createElement('div');
+                card.className = 'attribute-card';
+                card.onclick = () => toggleAttribute(parseInt(id), name);
+                
+                card.innerHTML = `
+                    <div class="attribute-id">${id}</div>
+                    <div class="attribute-name">${name}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleAttribute(id, name) {
+            const index = selectedAttributes.findIndex(attr => attr.id === id);
+            
+            if (index === -1) {
+                // Add attribute if we haven't reached the limit
+                if (selectedAttributes.length < 7) {
+                    selectedAttributes.push({ id, name });
+                }
+            } else {
+                // Remove attribute
+                selectedAttributes.splice(index, 1);
+            }
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const count = selectedAttributes.length;
+            const countElement = document.getElementById('selectionCount');
+            const continueButton = document.getElementById('continueButton');
+            const selectedContainer = document.getElementById('selectedAttributes');
+            const selectedList = document.getElementById('selectedList');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Update counter
+            countElement.textContent = count;
+
+            // Update selected attributes display
+            if (count > 0) {
+                selectedContainer.style.display = 'block';
+                selectedList.innerHTML = '';
+                
+                selectedAttributes.forEach(attr => {
+                    const item = document.createElement('div');
+                    item.className = 'selected-item';
+                    item.innerHTML = `
+                        <span>${attr.name}</span>
+                        <button class="remove-btn" onclick="removeAttribute(${attr.id})">×</button>
+                    `;
+                    selectedList.appendChild(item);
+                });
+            } else {
+                selectedContainer.style.display = 'none';
+            }
+
+            // Update continue button
+            if (count >= 2 && count <= 7) {
+                continueButton.disabled = false;
+                errorMessage.style.display = 'none';
+            } else {
+                continueButton.disabled = true;
+                if (count < 2) {
+                    errorMessage.textContent = 'Please select at least 2 attributes.';
+                    errorMessage.style.display = 'block';
+                } else if (count > 7) {
+                    errorMessage.textContent = 'Please select no more than 7 attributes.';
+                    errorMessage.style.display = 'block';
+                }
+            }
+
+            // Update card selection states
+            document.querySelectorAll('.attribute-card').forEach(card => {
+                const id = parseInt(card.querySelector('.attribute-id').textContent);
+                const isSelected = selectedAttributes.some(attr => attr.id === id);
+                card.classList.toggle('selected', isSelected);
+            });
+        }
+
+        function removeAttribute(id) {
+            selectedAttributes = selectedAttributes.filter(attr => attr.id !== id);
+            updateDisplay();
+        }
+
+        function continueToAlgorithm() {
+            if (selectedAttributes.length < 2 || selectedAttributes.length > 7) {
+                return;
+            }
+
+            // Store selected attributes in session storage
+            sessionStorage.setItem('selectedAttributes', JSON.stringify(selectedAttributes));
+            
+            // Redirect to the UH-Random algorithm page
+            window.location.href = '/uh_random_algorithm';
+        }
+
+        // Check if user has completed the previous study
+        if (sessionStorage.getItem('studyCompletion') === null) {
+            // Redirect to main page if study not completed
+            window.location.href = '/algorithm';
+        }
+        
+        // Check if user has seen Part II instructions
+        if (sessionStorage.getItem('part2InstructionsSeen') !== 'true') {
+            window.location.href = '/part2';
+        }
+
+        // Load dimension mapping on page load
+        loadDimensionMap();
+    </script>
+</body>
+</html>

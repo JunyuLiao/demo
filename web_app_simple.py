@@ -27,6 +27,10 @@ algorithm_running = False
 sessions = {}
 sessions_lock = threading.Lock()
 
+# UH-Random algorithm sessions
+uh_sessions = {}
+uh_sessions_lock = threading.Lock()
+
 def get_runner(session_id, create_if_missing=False):
     if not session_id:
         return None
@@ -35,6 +39,16 @@ def get_runner(session_id, create_if_missing=False):
         if runner is None and create_if_missing:
             runner = AlgorithmRunner()
             sessions[session_id] = runner
+        return runner
+
+def get_uh_runner(session_id, create_if_missing=False):
+    if not session_id:
+        return None
+    with uh_sessions_lock:
+        runner = uh_sessions.get(session_id)
+        if runner is None and create_if_missing:
+            runner = UHAlgorithmRunner()
+            uh_sessions[session_id] = runner
         return runner
 # --------- Custom JSON writer to keep each interaction on one line ---------
 def write_sessions_with_singleline_interactions(records, filepath):
@@ -204,17 +218,157 @@ class AlgorithmRunner:
             'output': self.output_lines
         }
 
+class UHAlgorithmRunner:
+    def __init__(self):
+        self.process = None
+        self.is_running = False
+        self.output_lines = []
+        self.selected_attributes = []
+        
+    def start_algorithm(self, attributes):
+        """Start the UH-Random C++ algorithm process"""
+        try:
+            # Ensure output directory exists for C++ intermediate files
+            os.makedirs('output', exist_ok=True)
+            
+            # Build UH-Random binary if it doesn't exist
+            if not os.path.exists('./main_uh_random'):
+                print("Building UH-Random algorithm...")
+                result = subprocess.run([
+                    "clang++", "-w", "-I/opt/local/include", "--std=c++17", "-Wall", "-Werror", "-pedantic",
+                    "main_uh_random.cpp", "highdim.cpp", "attribute_subset.cpp", "util.cpp",
+                    "other/*.c", "other/*.cpp", "-L/opt/local/lib", "-lglpk", "-lm", "-Ofast", "-o", "main_uh_random"
+                ], capture_output=True, text=True)
+                if result.returncode != 0:
+                    return False, f"Build failed: {result.stderr}"
+            
+            # Store selected attributes
+            self.selected_attributes = attributes
+            
+            # Prepare environment for subprocess
+            env_vars = os.environ.copy()
+            
+            # Start the UH-Random algorithm process
+            self.process = subprocess.Popen(
+                ["./main_uh_random", "car.txt"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                universal_newlines=True,
+                env=env_vars
+            )
+            
+            self.is_running = True
+            self.output_lines = []
+            
+            # Start output reading thread
+            threading.Thread(target=self._read_output, daemon=True).start()
+            
+            # Send the selected attributes to the process
+            self._send_attributes()
+            
+            return True, "UH-Random algorithm started successfully"
+            
+        except Exception as e:
+            return False, f"Failed to start UH-Random algorithm: {str(e)}"
+    
+    def _send_attributes(self):
+        """Send selected attributes to the algorithm process"""
+        if self.process and self.is_running:
+            try:
+                # Send number of final dimensions
+                self.process.stdin.write(f"{len(self.selected_attributes)}\n")
+                self.process.stdin.flush()
+                
+                # Send each dimension ID
+                for attr in self.selected_attributes:
+                    self.process.stdin.write(f"{attr['id']}\n")
+                    self.process.stdin.flush()
+                
+                print(f"Sent {len(self.selected_attributes)} attributes to UH-Random algorithm")
+            except Exception as e:
+                print(f"Error sending attributes: {e}")
+    
+    def _read_output(self):
+        """Read output from the algorithm process"""
+        while self.is_running and self.process:
+            try:
+                line = self.process.stdout.readline()
+                if line:
+                    self.output_lines.append(line.rstrip())
+                elif self.process.poll() is not None:
+                    break
+            except Exception as e:
+                print(f"Error reading output: {e}")
+                break
+        
+        exit_code = None
+        try:
+            exit_code = self.process.poll() if self.process else None
+        except Exception:
+            exit_code = None
+        print(f"UH-Random algorithm process ended. exit_code={exit_code}")
+        self.is_running = False
+        self.process = None
+    
+    def send_input(self, user_input):
+        """Send user input to the algorithm process"""
+        if self.process and self.is_running:
+            try:
+                self.process.stdin.write(user_input + '\n')
+                self.process.stdin.flush()
+                return True
+            except Exception as e:
+                print(f"Error sending input: {e}")
+                return False
+        return False
+    
+    def stop_algorithm(self):
+        """Stop the algorithm process"""
+        self.is_running = False
+        if self.process:
+            self.process.terminate()
+            self.process = None
+    
+    def get_output(self):
+        """Get current output lines"""
+        return self.output_lines.copy()
+    
+    def get_status(self):
+        """Get current status"""
+        return {
+            'running': self.is_running,
+            'output': self.output_lines
+        }
+
 # Removed single global runner in favor of per-session runners
 
 @app.route('/')
 def index():
-    """Main page - check for consent first"""
-    return render_template('index_simple.html')
+    """Main page - redirect to consent first"""
+    return render_template('consent.html')
 
 @app.route('/consent')
 def consent():
     """Consent page"""
     return render_template('consent.html')
+
+@app.route('/part1')
+def part1_instructions():
+    """Part I instructions page"""
+    return render_template('part1_instructions.html')
+
+@app.route('/part2')
+def part2_instructions():
+    """Part II instructions page"""
+    return render_template('part2_instructions.html')
+
+@app.route('/algorithm')
+def algorithm():
+    """Main algorithm page"""
+    return render_template('index_simple.html')
 
 @app.route('/feedback')
 def feedback():
@@ -225,6 +379,21 @@ def feedback():
 def thank_you():
     """Thank you page"""
     return render_template('thank_you.html')
+
+@app.route('/attribute_selection')
+def attribute_selection():
+    """Attribute selection page"""
+    return render_template('attribute_selection.html')
+
+@app.route('/uh_random_algorithm')
+def uh_random_algorithm():
+    """UH-Random algorithm page"""
+    return render_template('uh_random_algorithm.html')
+
+@app.route('/mechanism_rating')
+def mechanism_rating():
+    """Mechanism comparison rating page"""
+    return render_template('mechanism_rating.html')
 
 
 @app.route('/start_algorithm', methods=['POST'])
@@ -326,6 +495,76 @@ def get_status():
     if not session_id:
         return jsonify({'running': False, 'output': [], 'error': 'session_id is required'}), 400
     runner = get_runner(session_id)
+    if not runner:
+        return jsonify({'running': False, 'output': []})
+    return jsonify(runner.get_status())
+
+@app.route('/start_uh_algorithm', methods=['POST'])
+def start_uh_algorithm():
+    """Start the UH-Random algorithm for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'success': False, 'message': 'session_id is required'}), 400
+    
+    attributes = data.get('attributes', [])
+    if not attributes or len(attributes) < 2 or len(attributes) > 7:
+        return jsonify({'success': False, 'message': 'Please select 2-7 attributes'}), 400
+
+    runner = get_uh_runner(session_id, create_if_missing=True)
+    # If a previous process exists, terminate before starting a new one
+    if runner.is_running:
+        runner.stop_algorithm()
+        time.sleep(0.2)
+
+    success, message = runner.start_algorithm(attributes)
+    return jsonify({'success': success, 'message': message})
+
+@app.route('/send_uh_input', methods=['POST'])
+def send_uh_input():
+    """Send user input to the UH-Random algorithm for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'success': False, 'message': 'session_id is required'}), 400
+    raw_input = str(data.get('input', '')).strip()
+
+    # Validate integer input
+    try:
+        user_input = int(raw_input)
+    except Exception:
+        return jsonify({'success': False, 'message': 'Please enter an integer.'}), 400
+
+    runner = get_uh_runner(session_id)
+    if not runner or not runner.is_running:
+        return jsonify({'success': False, 'message': 'No active UH-Random session'}), 400
+
+    # Forward input
+    success = runner.send_input(str(user_input))
+    return jsonify({'success': success, 'message': 'Input sent' if success else 'Failed to send input'})
+
+@app.route('/stop_uh_algorithm', methods=['POST'])
+def stop_uh_algorithm():
+    """Stop the UH-Random algorithm for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'success': False, 'message': 'session_id is required'}), 400
+    runner = get_uh_runner(session_id)
+    if runner:
+        runner.stop_algorithm()
+        with uh_sessions_lock:
+            uh_sessions.pop(session_id, None)
+    return jsonify({'success': True, 'message': 'UH-Random algorithm stopped'})
+
+@app.route('/get_uh_status', methods=['POST'])
+def get_uh_status():
+    """Get current UH-Random algorithm status and output for a specific session"""
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'running': False, 'output': [], 'error': 'session_id is required'}), 400
+    runner = get_uh_runner(session_id)
     if not runner:
         return jsonify({'running': False, 'output': []})
     return jsonify(runner.get_status())
@@ -463,6 +702,92 @@ def submit_feedback():
         write_sessions_with_singleline_interactions(existing, feedback_file)
 
         return jsonify({'success': True, 'message': 'Feedback recorded successfully', 'file': feedback_file})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/submit_mechanism_ratings', methods=['POST'])
+def submit_mechanism_ratings():
+    """Collect mechanism comparison ratings"""
+    try:
+        data = request.get_json() or {}
+        
+        # Validate ratings
+        rating1 = data.get('mechanism_rating1')
+        rating2 = data.get('mechanism_rating2')
+        if (not rating1 or rating1 < 1 or rating1 > 10) or (not rating2 or rating2 < 1 or rating2 > 10):
+            return jsonify({'success': False, 'error': 'Invalid rating'}), 400
+        
+        # Extract study info
+        study = data.get('studyData', {}) or {}
+        uh_random = data.get('uhRandomData', {}) or {}
+        start_time = study.get('startTime', '')
+        end_time = uh_random.get('endTime', '')
+        questions = study.get('questionsAnswered', 0)
+        uh_questions = uh_random.get('questionsAnswered', 0)
+        
+        # Client IP (consider X-Forwarded-For when behind proxy)
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip and ',' in ip:
+            ip = ip.split(',')[0].strip()
+        
+        # Prepare record with mechanism ratings
+        record = {
+            'startTime': start_time,
+            'endTime': end_time,
+            'questions': questions,
+            'uh_random_questions': uh_questions,
+            'mechanism_rating1': rating1,  # Our algorithm rating
+            'mechanism_rating2': rating2,  # Attribute selection rating
+            'ip': ip,
+            'submission_time': datetime.now().isoformat()
+        }
+        
+        # Load existing feedback data
+        data_dir = get_data_dir()
+        feedback_file = os.path.join(data_dir, 'user_feedback.json')
+
+        try:
+            with open(feedback_file, 'r') as f:
+                existing = json.load(f)
+        except Exception:
+            existing = []
+
+        # Merge interactions from the per-session scratch file, then clear it
+        try:
+            sessions_dir = os.path.join(get_data_dir(), 'sessions')
+            os.makedirs(sessions_dir, exist_ok=True)
+            session_file = os.path.join(sessions_dir, os.environ.get('SESSION_ID', 'default') + '.json')
+            interactions = []
+            if os.path.exists(session_file):
+                with open(session_file, 'r') as sf:
+                    tmp_obj = json.load(sf)
+                    interactions = tmp_obj.get('interaction', []) if isinstance(tmp_obj, dict) else []
+                # Clear the session scratch after reading
+                try:
+                    os.remove(session_file)
+                except Exception:
+                    pass
+            if interactions:
+                record['interaction'] = interactions
+        except Exception:
+            pass
+
+        # Decide whether to update the last record or append a new one
+        if isinstance(existing, list) and len(existing) > 0 and isinstance(existing[-1], dict):
+            last = existing[-1]
+            # If last record doesn't yet have mechanism ratings, update it
+            if 'mechanism_rating1' not in last:
+                last.update(record)
+            else:
+                existing.append(record)
+        else:
+            existing = [record]
+
+        # Persist with one-line interactions
+        write_sessions_with_singleline_interactions(existing, feedback_file)
+
+        return jsonify({'success': True, 'message': 'Mechanism ratings recorded successfully', 'file': feedback_file})
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

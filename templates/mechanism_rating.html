@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback - High-Dimensional Regret Minimization</title>
+    <title>Mechanism Comparison - High-Dimensional Regret Minimization</title>
     <style>
         * {
             margin: 0;
@@ -21,11 +21,11 @@
             padding: 20px;
         }
 
-        .feedback-container {
+        .rating-container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
             overflow: hidden;
         }
@@ -53,7 +53,7 @@
             padding: 40px;
         }
 
-        .feedback-question {
+        .comparison-section {
             background: #f8f9fa;
             border-radius: 12px;
             padding: 30px;
@@ -61,17 +61,96 @@
             border-left: 5px solid #667eea;
         }
 
-        .feedback-question h2 {
+        .comparison-section h2 {
             color: #333;
             margin-bottom: 20px;
-            font-size: 1.4em;
-            line-height: 1.4;
+            font-size: 1.5em;
+            text-align: center;
         }
 
-        .feedback-question p {
-            color: #666;
-            line-height: 1.6;
+        .mechanism-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .mechanism-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .mechanism-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .mechanism-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #495057;
             margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .mechanism-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .advantages {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .advantages h4 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .advantages ul {
+            color: #155724;
+            line-height: 1.5;
+            margin-left: 15px;
+        }
+
+        .advantages li {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .disadvantages {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .disadvantages h4 {
+            color: #721c24;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .disadvantages ul {
+            color: #721c24;
+            line-height: 1.5;
+            margin-left: 15px;
+        }
+
+        .disadvantages li {
+            margin-bottom: 5px;
+            font-size: 0.9em;
         }
 
         .rating-section {
@@ -84,8 +163,9 @@
 
         .rating-section h3 {
             color: #856404;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-size: 1.3em;
+            text-align: center;
         }
 
         .rating-input-container {
@@ -99,6 +179,7 @@
             color: #856404;
             font-weight: 600;
             font-size: 1.1em;
+            min-width: 200px;
         }
 
         .rating-select {
@@ -124,6 +205,7 @@
             color: #856404;
             font-size: 0.9em;
             text-align: center;
+            margin-top: 10px;
         }
 
         .button-container {
@@ -142,7 +224,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-            margin-right: 15px;
         }
 
         .submit-button:hover {
@@ -161,7 +242,6 @@
             box-shadow: none;
         }
 
-
         .error-message {
             color: #dc3545;
             font-size: 0.9em;
@@ -179,7 +259,7 @@
         }
 
         @media (max-width: 768px) {
-            .feedback-container {
+            .rating-container {
                 margin: 10px;
             }
             
@@ -194,6 +274,11 @@
             .content {
                 padding: 30px 20px;
             }
+
+            .mechanism-comparison {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
             
             .rating-input-container {
                 flex-direction: column;
@@ -201,37 +286,76 @@
                 gap: 10px;
             }
             
-            .button-container {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .submit-button {
-                margin: 0;
-                width: 100%;
+            .rating-label {
+                min-width: auto;
             }
         }
     </style>
 </head>
 <body>
-    <div class="feedback-container">
+    <div class="rating-container">
         <div class="header">
-            <h1>Feedback</h1>
-            <p>Your opinion matters to us</p>
+            <h1>Mechanism Comparison</h1>
         </div>
         
         <div class="content">
-            <div class="feedback-question">
-                <h2>Algorithm Performance Rating</h2>
-                <p>The previous algorithm relies on a key assumption that the user considers only a small subset of attributes among all, and models the user's preference with those attributes. Based on your experience as well as the quality of the final recommendation, please rate the algorithm in the scale of 1 to 10.</p>
-                <p>There exists another best known algorithm that's also capable of discovering your favorite option among high-dimensional data. Unlike the previous one, it does not make the assumption. If provided enough information from the interaction, the recommendation result should be consistent with, if not better than, that of the previous algorithm. However, it requires more than 1000 questions to get a recommendation result with high quality, thus the demo of that algorithms is not provided. Based on this, to what extent would you accept that algorithm?</p>
+            <div class="comparison-section">
+                <!-- <h2>Two Different Approaches</h2> -->
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    You have now experienced both mechanisms, in Part I/II respectively. Please compare them based on your experience.
+                </p>
+                
+                <div class="mechanism-comparison">
+                    <div class="mechanism-card">
+                        <div class="mechanism-title">Mechanism 1</div>
+                        <div class="mechanism-description">
+                            The algorithm in Part I - it automatically discovers your preferences without requiring you to pre-select attributes.
+                        </div>
+                        <div class="advantages">
+                            <h4>Advantages:</h4>
+                            <ul>
+                                <li>User-friendly and natural interaction</li>
+                                <li>Automatic preference discover without pre-selection</li>
+                                <li>Works with all available attributes</li>
+                            </ul>
+                        </div>
+                        <div class="disadvantages">
+                            <h4>Disadvantages:</h4>
+                            <ul>
+                                <li>May require more questions</li>
+                                <!-- <li>Less direct control over attributes</li> -->
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mechanism-card">
+                        <div class="mechanism-title">Mechanism 2</div>
+                        <div class="mechanism-description">
+                            The algorithm in Part II - it requires you to select attributes first, then runs a simpler framework on those specific attributes.
+                        </div>
+                        <div class="advantages">
+                            <h4>Advantages:</h4>
+                            <ul>
+                                <li>Requires fewer questions</li>
+                                <li>Slightly more straightforward</li>
+                                <li>Focused directly on your interests</li>
+                            </ul>
+                        </div>
+                        <div class="disadvantages">
+                            <h4>Disadvantages:</h4>
+                            <ul>
+                                <li>Less natural interaction</li>
+                                <li>May miss important attributes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="rating-section">
                 <h3>Your Ratings</h3>
                 <div class="rating-input-container">
-                    <label for="rating1" class="rating-label">Previously Experienced Algorithm:</label>
+                    <label for="rating1" class="rating-label">Mechanism 1:</label>
                     <select id="rating1" class="rating-select">
                         <option value="">Select rating</option>
                         <option value="1">1</option>
@@ -247,7 +371,7 @@
                     </select>
                 </div>
                 <div class="rating-input-container">
-                    <label for="rating2" class="rating-label">The Other Existing Algorithm:</label>
+                    <label for="rating2" class="rating-label">Mechanism 2:</label>
                     <select id="rating2" class="rating-select">
                         <option value="">Select rating</option>
                         <option value="1">1</option>
@@ -266,8 +390,8 @@
             </div>
             
             <div class="button-container">
-                <button id="submitButton" class="submit-button" onclick="submitFeedback()">
-                    Submit Feedback
+                <button id="submitButton" class="submit-button" onclick="submitRatings()">
+                    Submit Ratings
                 </button>
             </div>
             
@@ -277,13 +401,13 @@
     </div>
 
     <script>
-        // Check if user has completed the study
-        if (sessionStorage.getItem('studyCompletion') === null) {
-            // Redirect to main page if study not completed
-            window.location.href = '/algorithm';
+        // Check if user has completed the UH-Random study
+        if (sessionStorage.getItem('uhRandomCompleted') !== 'true') {
+            // Redirect to UH-Random algorithm page if not completed
+            window.location.href = '/uh_random_algorithm';
         }
         
-        function submitFeedback() {
+        function submitRatings() {
             const rating1 = document.getElementById('rating1').value;
             const rating2 = document.getElementById('rating2').value;
             const submitButton = document.getElementById('submitButton');
@@ -307,61 +431,67 @@
             
             // Get study completion data
             const studyData = JSON.parse(sessionStorage.getItem('studyCompletion') || '{}');
+            const uhRandomData = {
+                startTime: studyData.startTime,
+                endTime: new Date().toISOString(),
+                questionsAnswered: parseInt(document.getElementById('questionsCounter')?.textContent || '0'),
+                completed: true
+            };
             
-            // Prepare feedback data
-            const feedbackData = {
-                rating1: parseInt(rating1),
-                rating2: parseInt(rating2),
+            // Prepare rating data
+            const ratingData = {
+                mechanism_rating1: parseInt(rating1),
+                mechanism_rating2: parseInt(rating2),
                 studyData: studyData,
+                uhRandomData: uhRandomData,
                 timestamp: new Date().toISOString()
             };
             
-            // Send feedback to server
-            fetch('/submit_feedback', {
+            // Send ratings to server
+            fetch('/submit_mechanism_ratings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(feedbackData)
+                body: JSON.stringify(ratingData)
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    successMessage.textContent = 'Thank you! Your feedback has been recorded.';
+                    successMessage.textContent = 'Thank you! Your ratings have been recorded.';
                     successMessage.style.display = 'block';
                     
-                    // Store feedback completion
-                    sessionStorage.setItem('feedbackSubmitted', 'true');
+                    // Store rating completion
+                    sessionStorage.setItem('mechanismRatingsSubmitted', 'true');
                     
-                    // Redirect to attribute selection page after a short delay
+                    // Redirect to thank you page after a short delay
                     setTimeout(() => {
-                        window.location.href = '/part2';
+                        window.location.href = '/thank_you';
                     }, 2000);
                 } else {
-                    throw new Error(data.error || 'Failed to submit feedback');
+                    throw new Error(data.error || 'Failed to submit ratings');
                 }
             })
             .catch(error => {
-                console.error('Error submitting feedback:', error);
-                errorMessage.textContent = 'Failed to submit feedback. Please try again.';
+                console.error('Error submitting ratings:', error);
+                errorMessage.textContent = 'Failed to submit ratings. Please try again.';
                 errorMessage.style.display = 'block';
                 
                 // Re-enable submit button
                 submitButton.disabled = false;
-                submitButton.textContent = 'Submit Feedback';
+                submitButton.textContent = 'Submit Ratings';
             });
         }
-        
         
         // Allow Enter key to submit (for select elements, this is less common but still useful)
         document.getElementById('rating1').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                submitFeedback();
+                submitRatings();
             }
         });
         document.getElementById('rating2').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                submitFeedback();
+                submitRatings();
             }
         });
     </script>

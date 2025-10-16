@@ -75,5 +75,183 @@
     "rating2": 2,
     "ip": "127.0.0.1",
     "submission_time": "2025-10-01T01:14:20.145104"
+  },
+  {
+    "startTime": "2025-10-09T19:05:16.923Z",
+    "endTime": "2025-10-09T19:05:20.985Z",
+    "questions": 0,
+    "rating1": 10,
+    "rating2": 1,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:05:27.768096"
+  },
+  {
+    "startTime": "2025-10-09T19:07:20.608Z",
+    "endTime": "2025-10-09T19:07:25.686Z",
+    "questions": 1,
+    "rating1": 10,
+    "rating2": 2,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:07:33.484245"
+  },
+  {
+  },
+  {
+    "startTime": "2025-10-09T19:09:10.278Z",
+    "endTime": "2025-10-09T19:09:15.343Z",
+    "questions": 0,
+    "rating1": 10,
+    "rating2": 2,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:09:20.306248"
+  },
+  {
+    "startTime": "2025-10-09T19:16:42.194Z",
+    "endTime": "2025-10-09T19:16:46.263Z",
+    "questions": 0,
+    "rating1": 9,
+    "rating2": 1,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:16:50.958619"
+  },
+  {
+    "startTime": "2025-10-09T19:17:23.518Z",
+    "endTime": "2025-10-09T19:18:34.249Z",
+    "questions": 0,
+    "rating1": 8,
+    "rating2": 2,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:18:34.253643",
+    "uh_random_questions": 0,
+    "mechanism_rating1": 9,
+    "mechanism_rating2": 1
+  },
+  {
+    "startTime": "2025-10-09T19:21:25.350Z",
+    "endTime": "2025-10-09T19:21:29.402Z",
+    "questions": 0,
+    "rating1": 9,
+    "rating2": 2,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:21:38.062719"
+  },
+  {
+    "startTime": "2025-10-09T19:23:32.800Z",
+    "endTime": "2025-10-09T19:24:25.075Z",
+    "questions": 0,
+    "rating1": 9,
+    "rating2": 1,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T14:24:25.078515",
+    "uh_random_questions": 0,
+    "mechanism_rating1": 8,
+    "mechanism_rating2": 2
+  },
+  {
+    "startTime": "2025-10-10T00:12:59.771Z",
+    "endTime": "2025-10-10T00:15:13.202Z",
+    "questions": 2,
+    "rating1": 10,
+    "rating2": 6,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-09T19:15:13.204506",
+    "uh_random_questions": 0,
+    "mechanism_rating1": 7,
+    "mechanism_rating2": 2
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+    "startTime": "2025-10-16T03:17:33.679Z",
+    "endTime": "2025-10-16T03:21:22.509Z",
+    "questions": 28,
+    "rating1": 10,
+    "rating2": 4,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-15T22:21:22.510719",
+    "uh_random_questions": 0,
+    "mechanism_rating1": 9,
+    "mechanism_rating2": 4
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+  },
+  {
+    "startTime": "2025-10-16T04:55:19.207Z",
+    "endTime": "2025-10-16T04:55:24.055Z",
+    "questions": 0,
+    "rating1": 10,
+    "rating2": 1,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-16T00:05:30.595666"
+  },
+  {
+  },
+  {
+    "startTime": "2025-10-16T05:13:49.252Z",
+    "endTime": "2025-10-16T05:13:56.297Z",
+    "questions": 0,
+    "rating1": 10,
+    "rating2": 1,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-16T00:14:10.202301"
+  },
+  {
+  },
+  {
+    "startTime": "2025-10-16T05:20:07.824Z",
+    "endTime": "2025-10-16T05:20:17.879Z",
+    "questions": 3,
+    "rating1": 10,
+    "rating2": 4,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-16T00:20:25.761678"
+  },
+  {
+    "startTime": "2025-10-16T05:21:34.282Z",
+    "endTime": "2025-10-16T05:21:39.977Z",
+    "questions": 2,
+    "rating1": 10,
+    "rating2": 2,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-16T00:21:50.913772"
+  },
+  {
+    "startTime": "2025-10-16T05:27:27.214Z",
+    "endTime": "2025-10-16T05:28:09.401Z",
+    "questions": 1,
+    "rating1": 9,
+    "rating2": 2,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-16T00:28:23.222275"
+  },
+  {
+    "startTime": "2025-10-16T05:31:28.580Z",
+    "endTime": "2025-10-16T05:32:06.349Z",
+    "questions": 1,
+    "rating1": 2,
+    "rating2": 9,
+    "ip": "127.0.0.1",
+    "submission_time": "2025-10-16T00:32:06.351807",
+    "uh_random_questions": 0,
+    "mechanism_rating1": 10,
+    "mechanism_rating2": 2
   }
 ]

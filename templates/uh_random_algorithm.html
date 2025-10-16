@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>High-Dimensional Regret Minimization Algorithm</title>
+    <title>UH-Random Algorithm - High-Dimensional Regret Minimization</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -72,14 +72,11 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        select, input, button {
+        button {
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
-        }
-        
-        button {
             background: #667eea;
             color: white;
             border: none;
@@ -102,14 +99,6 @@
         
         .btn-danger:hover {
             background: #c0392b;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
         }
         
         .main-content {
@@ -206,25 +195,6 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
         
-        /* Compact Not Interested card, full width like options */
-        .option-card.skip-option {
-            background: #6c757d; /* match secondary button */
-            border-color: #6c757d;
-            margin: 0 0 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 70px;
-        }
-        .option-card.skip-option:hover {
-            filter: brightness(0.95);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-        }
-        .skip-text {
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 1.05em;
-        }
         
         .option-header {
             display: flex;
@@ -266,8 +236,6 @@
             width: 180px;
             box-sizing: border-box;
         }
-        
-        
         
         .dimension-label {
             font-size: 0.8em;
@@ -329,15 +297,6 @@
             font-weight: 600;
             margin-bottom: 20px;
             text-align: center;
-        }
-        
-        .final-description {
-            font-size: 1.1em;
-            font-weight: 400;
-            margin-bottom: 25px;
-            text-align: center;
-            opacity: 0.9;
-            line-height: 1.4;
         }
         
         .recommendations-grid {
@@ -417,9 +376,8 @@
             transform: translateY(-1px);
         }
 
-        /* High-contrast text inside recommendation blocks */
         .recommendation-dim-item .dimension-label {
-            color: #6b7280; /* gray-500 */
+            color: #6b7280;
             font-weight: 600;
             font-size: 0.82em;
             letter-spacing: 0.02em;
@@ -433,7 +391,7 @@
         }
 
         .recommendation-dim-item .dimension-value {
-            color: #111827; /* gray-900 */
+            color: #111827;
             font-weight: 800;
             font-size: 1.1em;
             letter-spacing: 0.2px;
@@ -457,7 +415,6 @@
             background: rgba(255, 255, 255, 0.7);
         }
         
-        /* Firefox scrollbar */
         .recommendation-dims-grid {
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.2);
@@ -490,24 +447,6 @@
             background: #f8f9fa;
             border-radius: 5px;
             border: 1px solid #e9ecef;
-        }
-        
-        .input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .input-group input {
-            flex: 1;
-        }
-        
-        .input-group button {
-            min-width: 80px;
-        }
-        
-        .hidden {
-            display: none;
         }
         
         .loading {
@@ -547,13 +486,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Interactive Algorithm 1</h1>
+            <h1>Interactive Algorithm 2</h1>
             <!-- <p>Interactive preference learning with your selected attributes</p> -->
         </div>
         
         <div class="controls">
-            
-            
             <div class="control-group">
                 <button id="startBtn">Start Algorithm</button>
             </div>
@@ -574,40 +511,27 @@
             <div id="questionSection" class="question-section hidden">
                 <div class="question-title">Please choose the option you favor more:</div>
                 <div class="instruction-text">
-                    <p> • Consider the information presented, and choose the option you prefer.</p>
-                    <p>
-                        • If none of the attributes make sense to you, click 
-                        <span style="background: #fffbe6; border-radius: 4px; border-left: 4px solid #f6c700; padding: 2px 8px; color: #8a6611; font-weight: 600;">Not Interested</span> 
-                        to skip the question
-                    </p>
-                    <p>
-                        • If tired of answering more questions, click 
-                        <span style="background: #fffbe6; border-radius: 4px; border-left: 4px solid #f6c700; padding: 2px 8px; color: #8a6611; font-weight: 600;">
-                            Stop &amp; Get Results
-                        </span>
-                        and get recommendations immediately based on the current preferences learned
-                    </p>
-                    <p>Note: Since the dataset is real, some of the data may be missing. Just skip the question in this case</p>
+                    <p>• In each question, click on the option you prefer</p>
+                    <p>• If tired of answering more questions, click "Stop & Get Results" and get recommendations immediately based on the current preferences learned</p>
                 </div>
                 <div id="optionsContainer" class="options-container"></div>
-            <div id="inputSection" class="input-section">
-                <div style="text-align: center;">
+                <div id="inputSection" class="input-section">
+                    <div style="text-align: center;">
                         <button id="stopEarlyBtn" class="btn-danger">Stop & Get Results</button>
                     </div>
-                        <div style="margin-top: 8px; color: #6c757d; font-size: 0.9em; text-align: center;">
-                            If you answer all questions, you are guaranteed to get your favorite option; 
-                            if you stopped early, the system may need to output a set of recommendations (instead of a single one) to ensure accuracy.
-                        </div>
+                    <!-- <div style="margin-top: 8px; color: #6c757d; font-size: 0.9em; text-align: center;">
+                        If you answer all questions, you are guaranteed to get your favorite option; 
+                        if you stopped early, the system may need to output a set of recommendations (instead of a single one) to ensure accuracy.
+                    </div> -->
                 </div>
             </div>
             
             <!-- Final Recommendations Section -->
             <div id="finalRecommendations" class="final-recommendations hidden">
                 <div class="final-title">🎉 Final Recommendations</div>
-                <div class="final-description">Results are presented with attributes we discovered that you may be interested in.</div>
                 <div id="recommendationsContainer" class="recommendations-grid"></div>
                 <div class="next-button-container">
-                    <button id="nextButton" class="next-button" onclick="goToFeedback()">Next</button>
+                    <button id="nextButton" class="next-button" onclick="goToThankYou()">Continue to Mechanism Rating</button>
                 </div>
             </div>
             
@@ -627,22 +551,18 @@
         const finalRecommendations = document.getElementById('finalRecommendations');
         const recommendationsContainer = document.getElementById('recommendationsContainer');
         const loadingSection = document.getElementById('loadingSection');
-        const userInput = null; // input removed; we submit programmatically
         const startBtn = document.getElementById('startBtn');
-        const sendBtn = document.getElementById('sendBtn');
         const inputSection = document.getElementById('inputSection');
         const statusIndicator = document.getElementById('statusIndicator');
         const stopEarlyBtn = document.getElementById('stopEarlyBtn');
-        const skipBtn = null; // bottom skip button removed
         
         let isRunning = false;
         let pollInterval = null;
-        let lastQuestionCount = 0;
-        let actualAnsweredCount = 0; // Manual counter for actual responses
-        let currentOptions = []; // Store current options data
-        let dimensionMap = {}; // Store dimension ID to name mapping
-        let lastOutputHash = ''; // Store hash of last output to avoid unnecessary updates
-        let preservedScrollY = 0; // Preserve scroll position across updates
+        let actualAnsweredCount = 0;
+        let currentOptions = [];
+        let dimensionMap = {};
+        let lastOutputHash = '';
+        let preservedScrollY = 0;
         
         // Session management
         let sessionId = sessionStorage.getItem('sessionId');
@@ -655,22 +575,16 @@
 
         // Event listeners
         startBtn.addEventListener('click', startAlgorithm);
-        if (sendBtn) sendBtn.addEventListener('click', sendInput);
         stopEarlyBtn.addEventListener('click', stopEarly);
         
-        
-        // Enter key support for input
-        // input removed; keep keyboard shortcuts at document level
+        // Enter key support
         document.addEventListener('keypress', function(e) {
             if (!isRunning) return;
             if (e.key === '1') sendChoice(1);
             if (e.key === '2') sendChoice(2);
-            if (e.key === '0') skipQuestion();
-            if (e.key === 'Enter') return; // ignore
         });
         
         // Functions
-
         function preserveScroll() {
             preservedScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
         }
@@ -687,7 +601,6 @@
             
             isRunning = (status === 'running');
             startBtn.disabled = isRunning;
-            if (sendBtn) sendBtn.disabled = !isRunning;
             stopEarlyBtn.disabled = !isRunning;
         }
         
@@ -695,7 +608,6 @@
             questionSection.classList.remove('hidden');
             finalRecommendations.classList.add('hidden');
             loadingSection.classList.add('hidden');
-            // no input to focus
             restoreScroll();
         }
         
@@ -710,7 +622,6 @@
             finalRecommendations.classList.add('hidden');
             loadingSection.classList.remove('hidden');
             
-            // Update loading message
             const loadingText = loadingSection.querySelector('div:last-child');
             if (loadingText) {
                 loadingText.textContent = message;
@@ -724,84 +635,63 @@
             let foundQuestion = false;
             let foundHeader = false;
             
-            console.log('Parsing options from output, lines:', lines.length);
-            
-            
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
                 
-                // Look for the question marker
                 if (line.includes('Please choose the option you favor more:')) {
                     foundQuestion = true;
-                    console.log('Found question marker at line', i);
                     continue;
                 }
                 
                 if (!foundQuestion) continue;
                 
-                // Parse dimensions header - could be "| Options | 0 | 1 |" or "| 1 | 4 | 5 |"
-                // Only match lines that contain ONLY integers (dimension IDs), not floats (option values)
                 if (line.startsWith('|') && (line.includes('Options') || /^\|\s*\d+\s*\|/.test(line))) {
                     const parts = line.split('|').filter(part => part.trim() !== '');
                     
-                    // If it contains "Options", skip the first part, otherwise use all parts
                     if (line.includes('Options')) {
                         dimensions = parts.slice(1).map(part => parseInt(part.trim())).filter(num => !isNaN(num));
                     } else {
-                        // This is a dimensions-only line like "| 1| 4| 5| 15| 18|"
-                        // Verify that all parts are integers (not floats)
                         const potentialDimensions = parts.map(part => parseInt(part.trim())).filter(num => !isNaN(num));
                         const originalParts = parts.map(part => part.trim());
-                        
-                        // Check if all parts are integers (no decimal points)
                         const allIntegers = originalParts.every(part => /^\d+$/.test(part));
                         
                         if (allIntegers && potentialDimensions.length > 0) {
                             dimensions = potentialDimensions;
                         } else {
-                            // This is likely an option data line, not a header
                             continue;
                         }
                     }
                     
-                foundHeader = true;
-                continue;
+                    foundHeader = true;
+                    continue;
                 }
                 
-                // Skip separator lines
                 if (line.includes('---')) {
                     continue;
                 }
                 
-                // Parse option data - could be "| Option1 | 1.234 |" or "| 1.234 | 5.678 |"
                 if (line.startsWith('|') && foundHeader && !line.includes('---')) {
-                const parts = line.split('|').filter(part => part.trim() !== '');
+                    const parts = line.split('|').filter(part => part.trim() !== '');
                     
                     if (parts.length >= 1) {
                         let optionId, values;
                         
-                        // Check if first part is "OptionX" format
                         const optionMatch = parts[0].trim().match(/Option(\d+)/);
                         if (optionMatch) {
-                            // Format: "| Option1 | 1.234 | 5.678 |"
                             optionId = parseInt(optionMatch[1]);
                             values = parts.slice(1).map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
                         } else {
-                            // Format: "| 1.234 | 5.678 |" (no OptionX prefix)
-                            // Check if this line contains float values (option data) vs integers (dimension header)
                             const hasFloatValues = parts.some(part => /^\d+\.\d+$/.test(part.trim()));
                             
                             if (hasFloatValues) {
-                                optionId = options.length + 1; // Assign sequential IDs
+                                optionId = options.length + 1;
                                 values = parts.map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
                             } else {
-                                // This might be a dimension header line that wasn't caught earlier
                                 continue;
                             }
                         }
                         
                         if (values.length > 0) {
-                            // Use the actual dimensions from the header, or fall back to indices
                             const optionDimensions = dimensions.length > 0 ? 
                                 dimensions.slice(0, values.length) : 
                                 Array.from({length: values.length}, (_, i) => i);
@@ -815,13 +705,11 @@
                     }
                 }
                 
-                // Stop parsing if we hit the input prompt
                 if (line.includes('Your choice')) {
                     break;
                 }
             }
             
-            console.log('Parsing complete, found', options.length, 'options');
             return options;
         }
         
@@ -829,7 +717,6 @@
             const recommendations = [];
             let startIndex = -1;
             
-            // Find the start of final recommendations
             for (let i = 0; i < lines.length; i++) {
                 if (lines[i].includes('=== FINAL RECOMMENDATION ===')) {
                     startIndex = i;
@@ -839,7 +726,6 @@
             
             if (startIndex === -1) return recommendations;
             
-            // Parse recommendation lines
             for (let i = startIndex + 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (line.startsWith('Option') && line.includes(':')) {
@@ -848,7 +734,6 @@
                         const optionId = parseInt(optionMatch[1]);
                         const restOfLine = optionMatch[2].trim();
                         
-                        // Parse dimension-value pairs like "dim 4: 33.1625 dim 15: 2.1959"
                         const dimValuePairs = [];
                         const dimMatches = restOfLine.match(/dim\s+(\d+):\s+([\d.]+)/g);
                         if (dimMatches) {
@@ -877,7 +762,6 @@
         }
         
         function displayOptions(options) {
-            // Store scroll positions before updating
             const scrollPositions = [];
             const dimensionGrids = optionsContainer.querySelectorAll('.dimensions-grid');
             dimensionGrids.forEach(grid => {
@@ -887,15 +771,6 @@
             optionsContainer.innerHTML = '';
             currentOptions = options;
             
-            // Add a large grey "Not Interested" card at the top
-            const skipCard = document.createElement('div');
-            skipCard.className = 'option-card skip-option';
-            skipCard.onclick = () => skipQuestion();
-            skipCard.innerHTML = `
-                <div class="skip-text">Not Interested</div>
-            `;
-            optionsContainer.appendChild(skipCard);
-
             options.forEach((option, index) => {
                 const optionCard = document.createElement('div');
                 optionCard.className = 'option-card';
@@ -904,7 +779,6 @@
                 let dimensionsHtml = '';
                 option.values.forEach((value, dimIndex) => {
                     const dimLabel = option.dimensions[dimIndex] || dimIndex;
-                    // Use actual dimension name from mapping
                     const displayLabel = getDimensionName(dimLabel);
                     // Show integer values for Model Year, decimal for others
                     const displayValue = displayLabel === "Model Year" ? Math.round(value).toString() : value.toFixed(3);
@@ -929,7 +803,6 @@
                 optionsContainer.appendChild(optionCard);
             });
             
-            // Restore scroll positions after a brief delay to ensure DOM is updated
             setTimeout(() => {
                 const newDimensionGrids = optionsContainer.querySelectorAll('.dimensions-grid');
                 newDimensionGrids.forEach((grid, index) => {
@@ -942,7 +815,6 @@
         }
         
         function displayFinalRecommendations(recommendations) {
-            // Store scroll positions before updating
             const scrollPositions = [];
             const recommendationDims = recommendationsContainer.querySelectorAll('.recommendation-dims');
             recommendationDims.forEach(dims => {
@@ -955,7 +827,6 @@
                 const recCard = document.createElement('div');
                 recCard.className = 'recommendation-card';
                 
-                // Build dimension blocks
                 const dimBlocks = rec.dimensions.map(dim => {
                     const name = getDimensionName(dim.dimension);
                     // Show integer values for Model Year, decimal for others
@@ -983,7 +854,6 @@
                 recommendationsContainer.appendChild(recCard);
             });
             
-            // Restore scroll positions after a brief delay to ensure DOM is updated
             setTimeout(() => {
                 const newRecommendationDims = recommendationsContainer.querySelectorAll('.recommendation-dims');
                 newRecommendationDims.forEach((dims, index) => {
@@ -993,82 +863,36 @@
                 });
                 restoreScroll();
             }, 10);
-            
-            // Track study completion
-            trackStudyCompletion();
         }
         
-        function trackStudyCompletion() {
-            const startTime = sessionStorage.getItem('studyStartTime');
-            const endTime = new Date().toISOString();
-            const questionsAnswered = actualAnsweredCount;
-            
-            // Store completion data
-            const completionData = {
-                startTime: startTime,
-                endTime: endTime,
-                questionsAnswered: questionsAnswered,
-                completed: true
-            };
-            
-            sessionStorage.setItem('studyCompletion', JSON.stringify(completionData));
-            
-            // Send completion data to server
-            fetch('/study_completion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(completionData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Study completion recorded:', data);
-            })
-            .catch(error => {
-                console.error('Error recording study completion:', error);
-            });
-            
-            console.log('Study completed:', completionData);
-        }
-        
-        function goToFeedback() {
-            // Redirect to feedback page
-            window.location.href = '/feedback';
+        function goToThankYou() {
+            // Mark UH-Random study as completed
+            sessionStorage.setItem('uhRandomCompleted', 'true');
+            window.location.href = '/mechanism_rating';
         }
         
         function selectOption(index) {
-            // Remove previous selection
             document.querySelectorAll('.option-card').forEach(card => {
                 card.classList.remove('selected');
             });
             
-            // Add selection to clicked card
             document.querySelectorAll('.option-card')[index].classList.add('selected');
-            
-            // Submit immediately
             sendChoice(index + 1);
         }
         
-        
         function stopEarly() {
-            // Send -99 to stop the algorithm early
             sendChoice(-99);
         }
 
-        function skipQuestion() {
-            // Send 0 to skip this question
-            sendChoice(0);
-        }
         
         function sendChoice(value) {
             const num = Number(value);
             const maxOption = currentOptions.length;
-            if (!Number.isInteger(num) || !(num === -99 || (num >= 0 && num <= maxOption))) {
+            if (!Number.isInteger(num) || !(num === -99 || (num >= 1 && num <= maxOption))) {
                 return;
             }
             preserveScroll();
-            fetch('/send_input', {
+            fetch('/send_uh_input', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ input: String(num), session_id: sessionId })
@@ -1110,14 +934,14 @@
             for (let i = 0; i < str.length; i++) {
                 const char = str.charCodeAt(i);
                 hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32-bit integer
+                hash = hash & hash;
             }
             return hash.toString();
         }
         
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(pollStatus, 1000); // Poll every second
+            pollInterval = setInterval(pollStatus, 1000);
         }
         
         function stopPolling() {
@@ -1128,14 +952,13 @@
         }
         
         function pollStatus() {
-            fetch('/get_status', {
+            fetch('/get_uh_status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ session_id: sessionId })
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Polling response:', data);
                 if (data.running !== isRunning) {
                     setStatus(data.running ? 'running' : 'stopped');
                     if (!data.running) {
@@ -1143,77 +966,59 @@
                     }
                 }
                 
-                // Update output - only if content has changed
                 if (data.output && data.output.length > 0) {
                     const lines = data.output;
                     const currentHash = simpleHash(lines.join('\n'));
                     
-                    // Only update if output has changed
                     if (currentHash !== lastOutputHash) {
                         lastOutputHash = currentHash;
-                        console.log('Output changed, updating display. Lines:', lines.length);
                     
-                    // Check for algorithm phases and update loading message accordingly
-                    let currentPhase = 'Initializing algorithm...';
-                    for (let i = lines.length - 1; i >= 0; i--) {
-                        if (lines[i].includes('Phase 3: Starting interactive questioning...')) {
-                            currentPhase = 'Starting interactive questions...';
-                            break;
-                        } else if (lines[i].includes('Phase 2: Refining dimension selection...')) {
-                            currentPhase = 'Refining dimension selection...';
-                            break;
-                        } else if (lines[i].includes('Phase 1: Initializing dimension selection...')) {
-                            currentPhase = 'Initializing dimension selection...';
-                            break;
-                        } else if (lines[i].includes('Initializing algorithm phases...')) {
-                            currentPhase = 'Initializing algorithm phases...';
-                            break;
-                        }
-                    }
-                    
-                    // Check if algorithm has completed (has "=== FINAL RECOMMENDATION ===")
-                    let finalRecommendationsIndex = -1;
-                    for (let i = 0; i < lines.length; i++) {
-                        if (lines[i].includes("=== FINAL RECOMMENDATION ===")) {
-                            finalRecommendationsIndex = i;
-                            break;
-                        }
-                    }
-                    
-                    if (finalRecommendationsIndex >= 0) {
-                        // Algorithm completed: show final recommendations
-                        const recommendations = parseFinalRecommendations(lines);
-                        if (recommendations.length > 0) {
-                            displayFinalRecommendations(recommendations);
-                            showFinalRecommendations();
-                        }
-                    } else {
-                        // Algorithm still running: look for current question
-                        let lastQuestionIndex = -1;
+                        let currentPhase = 'Initializing UH-Random algorithm...';
                         for (let i = lines.length - 1; i >= 0; i--) {
-                            if (lines[i].includes("Please choose the option you favor more:")) {
-                                lastQuestionIndex = i;
+                            if (lines[i].includes('Please choose the option you favor more:')) {
+                                currentPhase = 'Preparing questions...';
                                 break;
                             }
                         }
                         
-                        if (lastQuestionIndex >= 0) {
-                            // Parse and display current options
-                            const questionLines = lines.slice(lastQuestionIndex);
-                            const options = parseOptionsFromOutput(questionLines);
-                            
-                            if (options.length >= 2) {
-                                displayOptions(options);
-                                showQuestionSection();
-                            } else {
-                                showLoading('Preparing your first question...');
+                        let finalRecommendationsIndex = -1;
+                        for (let i = 0; i < lines.length; i++) {
+                            if (lines[i].includes("=== FINAL RECOMMENDATION ===")) {
+                                finalRecommendationsIndex = i;
+                                break;
+                            }
+                        }
+                        
+                        if (finalRecommendationsIndex >= 0) {
+                            const recommendations = parseFinalRecommendations(lines);
+                            if (recommendations.length > 0) {
+                                displayFinalRecommendations(recommendations);
+                                showFinalRecommendations();
                             }
                         } else {
-                            // No question found yet, show loading with current phase
-                            showLoading(currentPhase);
+                            let lastQuestionIndex = -1;
+                            for (let i = lines.length - 1; i >= 0; i--) {
+                                if (lines[i].includes("Please choose the option you favor more:")) {
+                                    lastQuestionIndex = i;
+                                    break;
+                                }
+                            }
+                            
+                            if (lastQuestionIndex >= 0) {
+                                const questionLines = lines.slice(lastQuestionIndex);
+                                const options = parseOptionsFromOutput(questionLines);
+                                
+                                if (options.length >= 2) {
+                                    displayOptions(options);
+                                    showQuestionSection();
+                                } else {
+                                    showLoading('Preparing your first question...');
+                                }
+                            } else {
+                                showLoading(currentPhase);
+                            }
                         }
                     }
-                    } // Close the hash check if statement
                 }
             })
             .catch(error => {
@@ -1221,32 +1026,36 @@
             });
         }
         
-        
         function startAlgorithm() {
-            const dataset = 'car.txt';
+            const selectedAttributes = JSON.parse(sessionStorage.getItem('selectedAttributes') || '[]');
             
-            console.log('Starting algorithm with dataset:', dataset);
+            if (selectedAttributes.length === 0) {
+                alert('No attributes selected. Please go back and select attributes first.');
+                return;
+            }
             
-            // Reset question counter for new algorithm
-            lastQuestionCount = 0;
-            actualAnsweredCount = 0; // Reset manual counter
+            console.log('Starting UH-Random algorithm with attributes:', selectedAttributes);
+            
+            actualAnsweredCount = 0;
             const counterElement = document.getElementById('questionsCounter');
             if (counterElement) {
                 counterElement.textContent = '0';
             }
             
-            // Clear previous state
             questionSection.classList.add('hidden');
             finalRecommendations.classList.add('hidden');
             loadingSection.classList.add('hidden');
             showLoading();
             
-            fetch('/start_algorithm', {
+            fetch('/start_uh_algorithm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ dataset: dataset, use_real: true, session_id: sessionId })
+                body: JSON.stringify({ 
+                    attributes: selectedAttributes, 
+                    session_id: sessionId 
+                })
             })
             .then(response => {
                 console.log('Response status:', response.status);
@@ -1257,7 +1066,7 @@
                 if (data.success) {
                     setStatus('running');
                     startPolling();
-                    console.log('Algorithm started successfully, polling started');
+                    console.log('UH-Random algorithm started successfully, polling started');
                 } else {
                     console.error('Algorithm start failed:', data.message);
                     alert('Failed to start algorithm: ' + data.message);
@@ -1269,35 +1078,18 @@
             });
         }
         
-        
-        // sendInput() no longer used (input removed); replaced by sendChoice()
-        
-        
-        
-        
-        // Check for study consent on page load
-        if (sessionStorage.getItem('studyConsent') !== 'true') {
-            window.location.href = '/consent';
-        }
-        
-        // Check if user has seen Part I instructions
-        if (sessionStorage.getItem('part1InstructionsSeen') !== 'true') {
-            window.location.href = '/part1';
+        // Check if user has selected attributes
+        if (sessionStorage.getItem('selectedAttributes') === null) {
+            window.location.href = '/attribute_selection';
         }
         
         // Load dimension mapping on page load
         loadDimensionMap();
         
-        // Check for auto-start flag and start algorithm automatically
-        if (sessionStorage.getItem('autoStart') === 'true') {
-            // Clear the auto-start flag to prevent re-triggering
-            sessionStorage.removeItem('autoStart');
-            
-            // Auto-start the algorithm after a short delay to ensure page is loaded
-            setTimeout(() => {
-                startAlgorithm();
-            }, 1000);
-        }
+        // Auto-start the algorithm after a short delay to ensure page is loaded
+        setTimeout(() => {
+            startAlgorithm();
+        }, 1000);
         
         // Clean up polling on page unload
         window.addEventListener('beforeunload', function() {
