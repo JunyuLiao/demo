@@ -105,6 +105,23 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
         printf("error_1: d_left is 0\n");
         exit(1);
     }
+    
+    // If no dimensions were removed in Phase 1, we need to handle this case
+    // by randomly selecting some dimensions to remove to make the algorithm work
+    if (d_left == d) {
+        printf("No dimensions removed in Phase 1, randomly selecting dimensions to remove...\n");
+        // Remove d_hat dimensions randomly to make the algorithm work
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> dis(0, d-1);
+        
+        for (int i = 0; i < d_hat && selected_dimensions.size() > 0; ++i) {
+            auto it = selected_dimensions.begin();
+            std::advance(it, dis(gen) % selected_dimensions.size());
+            selected_dimensions.erase(it);
+        }
+        d_left = selected_dimensions.size();
+    }
     int d_target = d_bar;
 	while (d_left > 0 && num_questions > 0 && final_dimensions.size() < d_bar && keep_answer){
         d_left = selected_dimensions.size();
@@ -277,6 +294,11 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                                     if (selected_dimensions.find(dim) == selected_dimensions.end() && final_dimensions.find(dim) == final_dimensions.end()){
                                         selected_dimensions_i.insert(dim);
                                     }
+                                    // If no dimensions were removed in Phase 1, selected_dimensions == selected_dimensions_init
+                                    // In this case, we need to add dimensions from selected_dimensions instead
+                                    else if (d_left == d && selected_dimensions.find(dim) != selected_dimensions.end() && final_dimensions.find(dim) == final_dimensions.end()){
+                                        selected_dimensions_i.insert(dim);
+                                    }
                                 }
                                 point_set_t* S = generate_S(skyline, selected_dimensions_i, size);
                                 int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
@@ -319,6 +341,11 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                             int idx = dis(gen);
                             int dim = *next(selected_dimensions_init.begin(), idx);
                             if (selected_dimensions.find(dim) == selected_dimensions.end() && final_dimensions.find(dim) == final_dimensions.end()){
+                                selected_dimensions_i.insert(dim);
+                            }
+                            // If no dimensions were removed in Phase 1, selected_dimensions == selected_dimensions_init
+                            // In this case, we need to add dimensions from selected_dimensions instead
+                            else if (d_left == d && selected_dimensions.find(dim) != selected_dimensions.end() && final_dimensions.find(dim) == final_dimensions.end()){
                                 selected_dimensions_i.insert(dim);
                             }
                         }
