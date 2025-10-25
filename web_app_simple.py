@@ -178,6 +178,17 @@ class AlgorithmRunner:
                 print(f"Error reading output: {e}")
                 break
         
+        # Drain any remaining buffered output after process exit
+        try:
+            if self.process and self.process.stdout:
+                tail = self.process.stdout.read()
+                if tail:
+                    for ln in tail.splitlines():
+                        self.output_lines.append(ln.rstrip())
+        except Exception as e:
+            # Non-fatal; best effort
+            print(f"Trailing output read error: {e}")
+
         # Mark not running and log exit code for diagnosis
         exit_code = None
         try:
