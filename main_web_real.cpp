@@ -19,6 +19,7 @@ using namespace std;
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <thread>
 
 // Real interactive version for web interface
 int main(int argc, char *argv[]){
@@ -171,12 +172,17 @@ int main(int argc, char *argv[]){
     // printf("========================================\n");
 
     // Cleanup
+    fflush(stdout);
     release_point_set(skyline, false);
     release_point(u);
     release_point_set(h->S, false);
     release_point_set(P, true);
     release_point_set(P_raw, true);
     delete h;
+    // Emit a completion marker and give the reader a brief window to consume
+    printf("\n=== DONE ===\n");
+    fflush(stdout);
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
     
     return 0;
 }
