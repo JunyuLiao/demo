@@ -22,6 +22,11 @@ using namespace std;
 
 // Real interactive version for web interface
 int main(int argc, char *argv[]){
+    // Disable stdio buffering to ensure immediate flush in containerized envs
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
     // Default parameters
     char *input = (char*)"car.txt";
     int size = 2;
