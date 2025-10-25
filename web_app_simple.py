@@ -50,6 +50,17 @@ def get_uh_runner(session_id, create_if_missing=False):
             runner = UHAlgorithmRunner()
             uh_sessions[session_id] = runner
         return runner
+
+# --------- Debug logging helper ---------
+DEBUG = os.environ.get('APP_DEBUG', '1') == '1'
+def dlog(msg):
+    if not DEBUG:
+        return
+    try:
+        ts = datetime.utcnow().isoformat()
+        print(f"[DEBUG {ts}] {msg}", flush=True)
+    except Exception:
+        pass
 # --------- Custom JSON writer to keep each interaction on one line ---------
 def write_sessions_with_singleline_interactions(records, filepath):
     try:
@@ -141,6 +152,7 @@ class AlgorithmRunner:
             # Prepare environment for subprocess (propagate DATA_DIR and SESSION_ID)
             env_vars = os.environ.copy()
 
+            dlog(f"[{id(self)}] starting run_web dataset={dataset_path}")
             # Start the algorithm process with the specified dataset
             self.process = subprocess.Popen(
                 ["./run_web", dataset_path],
@@ -159,23 +171,30 @@ class AlgorithmRunner:
             # Start output reading thread
             threading.Thread(target=self._read_output, daemon=True).start()
             
+            dlog(f"[{id(self)}] started pid={self.process.pid}")
             return True, "Algorithm started successfully"
             
         except Exception as e:
+            dlog(f"[{id(self)}] failed to start: {e}")
             return False, f"Failed to start algorithm: {str(e)}"
     
     def _read_output(self):
         """Read output from the algorithm process"""
+        dlog(f"[{id(self)}] reader thread begin")
         while self.is_running and self.process:
             try:
                 line = self.process.stdout.readline()
                 if line:
-                    self.output_lines.append(line.rstrip())
+                    line_s = line.rstrip('\n')
+                    self.output_lines.append(line_s)
+                    if line_s:
+                        dlog(f"[{id(self)}] out: {line_s[:180]}")
                 elif self.process.poll() is not None:
                     # Process has ended
+                    dlog(f"[{id(self)}] EOF + process ended")
                     break
             except Exception as e:
-                print(f"Error reading output: {e}")
+                dlog(f"[{id(self)}] read error: {e}")
                 break
         
         # Drain any remaining buffered output after process exit
@@ -184,10 +203,13 @@ class AlgorithmRunner:
                 tail = self.process.stdout.read()
                 if tail:
                     for ln in tail.splitlines():
-                        self.output_lines.append(ln.rstrip())
+                        ln2 = ln.rstrip('\n')
+                        self.output_lines.append(ln2)
+                        if ln2:
+                            dlog(f"[{id(self)}] tail: {ln2[:180]}")
         except Exception as e:
             # Non-fatal; best effort
-            print(f"Trailing output read error: {e}")
+            dlog(f"[{id(self)}] tail read error: {e}")
 
         # Mark not running and log exit code for diagnosis
         exit_code = None
@@ -195,7 +217,7 @@ class AlgorithmRunner:
             exit_code = self.process.poll() if self.process else None
         except Exception:
             exit_code = None
-        print(f"Algorithm process ended. exit_code={exit_code}")
+        dlog(f"[{id(self)}] process ended exit={exit_code}")
         self.is_running = False
         self.process = None
     
@@ -205,9 +227,10 @@ class AlgorithmRunner:
             try:
                 self.process.stdin.write(user_input + '\n')
                 self.process.stdin.flush()
+                dlog(f"[{id(self)}] in: {user_input}")
                 return True
             except Exception as e:
-                print(f"Error sending input: {e}")
+                dlog(f"[{id(self)}] send error: {e}")
                 return False
         return False
     
@@ -224,10 +247,12 @@ class AlgorithmRunner:
     
     def get_status(self):
         """Get current status"""
-        return {
+        state = {
             'running': self.is_running,
             'output': self.output_lines
         }
+        dlog(f"[{id(self)}] get_status running={self.is_running} lines={len(self.output_lines)}")
+        return state
 
 class UHAlgorithmRunner:
     def __init__(self):
@@ -417,15 +442,18 @@ def start_algorithm():
     dataset = 'car.txt'  # Always use car.txt at repo root
     use_real = data.get('use_real', False)
 
+    dlog(f"/start_algorithm session={session_id} use_real={use_real}")
     runner = get_runner(session_id, create_if_missing=True)
     # If a previous process exists, terminate before starting a new one
     if runner.is_running:
+        dlog(f"/start_algorithm stopping previous run for session={session_id}")
         runner.stop_algorithm()
         time.sleep(0.2)
 
     # Ensure SESSION_ID is exported before starting subprocess
     os.environ['SESSION_ID'] = session_id
     success, message = runner.start_algorithm(dataset, use_real)
+    dlog(f"/start_algorithm launched session={session_id} success={success} msg={message}")
 
     # Initialize a per-session scratch file path for interactions
     try:
@@ -481,7 +509,9 @@ def send_input():
         return jsonify({'success': False, 'message': 'No active session'}), 400
 
     # Forward input
+    dlog(f"/send_input session={session_id} input={user_input}")
     success = runner.send_input(str(user_input))
+    dlog(f"/send_input session={session_id} ok={success}")
     return jsonify({'success': success, 'message': 'Input sent' if success else 'Failed to send input'})
 
 @app.route('/stop_algorithm', methods=['POST'])
@@ -508,7 +538,10 @@ def get_status():
     runner = get_runner(session_id)
     if not runner:
         return jsonify({'running': False, 'output': []})
-    return jsonify(runner.get_status())
+    state = runner.get_status()
+    if not state.get('running'):
+        dlog(f"/get_status session={session_id} running=false lines={len(state.get('output', []))}")
+    return jsonify(state)
 
 @app.route('/start_uh_algorithm', methods=['POST'])
 def start_uh_algorithm():
