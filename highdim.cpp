@@ -211,15 +211,16 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                 }
                 point_set_t* S = generate_S(skyline, selected_dimensions_i, size);
                 int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
-                id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
                 if (maxIdx == -99) {
                     keep_answer = false;
                     stop_phase = 2;
                     release_point_set(S, true);
                     selected_dimensions_i.clear();  
                     break;
+                } else {
+                    num_questions -= 1;
+                    id = (maxIdx >= 0) ? S->points[maxIdx]->id : -1;
                 }
-                else {num_questions -= 1;}
                 release_point_set(S, true);
                 selected_dimensions_i.clear();
             }
@@ -242,14 +243,15 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                 }
                 point_set_t* S = generate_S(skyline, selected_dimensions_i, size);
                 int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
-                id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
                 if (maxIdx == -99) {
                     keep_answer = false;
                     release_point_set(S, true);
                     selected_dimensions_i.clear();  
                     break;
+                } else {
+                    num_questions -= 1;
+                    id = (maxIdx >= 0) ? S->points[maxIdx]->id : -1;
                 }
-                else {num_questions -= 1;}
         
                 release_point_set(S, true);
                 selected_dimensions_i.clear();
@@ -307,15 +309,16 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                                 }
                                 point_set_t* S = generate_S(skyline, selected_dimensions_i, size);
                                 int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
-                                id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
                                 if (maxIdx == -99) {
                                     keep_answer = false;
                                     stop_phase = 2;
                                     release_point_set(S, true);
                                     selected_dimensions_i.clear();  
                                     break;
+                                } else {
+                                    num_questions -= 1;
+                                    id = (maxIdx >= 0) ? S->points[maxIdx]->id : -1;
                                 }
-                                else {num_questions -= 1;}
                                 release_point_set(S, true);
                                 selected_dimensions_i.clear();
                                 if (id != -1){ // the dimension is in the left half
@@ -354,17 +357,18 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                                 selected_dimensions_i.insert(dim);
                             }
                         }
-                        point_set_t* S = generate_S(skyline, selected_dimensions_i, size);
-                        int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
-                        id = maxIdx != -1 ? S->points[maxIdx]->id : -1;
-                        if (maxIdx == -99) {
-                            keep_answer = false;
-                            stop_phase = 2;
-                            release_point_set(S, true);
-                            selected_dimensions_i.clear();  
-                            break;
-                        }
-                        else {num_questions -= 1;}
+                point_set_t* S = generate_S(skyline, selected_dimensions_i, size);
+                int maxIdx = show_to_user(P_raw, S, selected_dimensions_i, u);
+                if (maxIdx == -99) {
+                    keep_answer = false;
+                    stop_phase = 2;
+                    release_point_set(S, true);
+                    selected_dimensions_i.clear();  
+                    break;
+                } else {
+                    num_questions -= 1;
+                    id = (maxIdx >= 0) ? S->points[maxIdx]->id : -1;
+                }
                         
                         release_point_set(S, true);
                         selected_dimensions_i.clear();
