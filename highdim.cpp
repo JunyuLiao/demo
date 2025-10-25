@@ -6,6 +6,8 @@
 #include <string>
 #include <cstdlib>
 #include <chrono>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, int size, int d_bar, int d_hat, int d_hat_2, point_t* u, int K, int s, double epsilon, int maxRound, double& Qcount, double& Csize, int cmp_option, int stop_option, int prune_option, int dom_option, int& num_questions){
@@ -33,7 +35,9 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
         if (!base.empty() && base.back() == '/') base.pop_back();
         const char* sid = std::getenv("SESSION_ID");
         std::string sessionId = sid ? std::string(sid) : std::string("default");
-        std::string filepath = base + "/sessions/" + sessionId + ".json";
+        std::string folder = base + "/sessions";
+        mkdir(folder.c_str(), 0755);
+        std::string filepath = folder + "/" + sessionId + ".json";
         std::ifstream in(filepath);
         std::string content; if (in.good()) { std::ostringstream b; b << in.rdbuf(); content = b.str(); }
         in.close();
@@ -434,6 +438,27 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
 			D_prime->points[j]->coord[p] = skyline->points[j]->coord[*next(set_final_dimensions.begin(), p)];
 		}
 	}
+
+    // If user stopped in Phase 2 very early, skip heavy LP/attribute subset and
+    // return a trivial recommendation to avoid solver issues on some environments
+    if (!keep_answer && stop_phase >= 2) {
+        // Record phase and build a minimal output directly from current skyline
+        append_phase_record(stop_phase);
+        point_set_t* S_output = alloc_point_set(1);
+        S_output->points[0] = skyline->points[0];
+
+        double time_3 = 0.0;
+        auto end_time_3_quick = std::chrono::high_resolution_clock::now();
+        (void)end_time_3_quick; // silence unused var warning
+
+        highdim_output* output = new highdim_output;
+        output->S = S_output;
+        output->final_dimensions = set_final_dimensions;
+        output->time_12 = time_12;
+        output->time_3 = time_3;
+        release_point_set(D_prime, true);
+        return output;
+    }
 
     // take the skyline of the newly constructed dataset D_prime
     point_set_t* skyline_D_prime = skyline_point(D_prime);
