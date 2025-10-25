@@ -443,23 +443,40 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
 		}
 	}
 
-    // If user stopped in Phase 2 very early, skip heavy LP/attribute subset and
-    // return a trivial recommendation to avoid solver issues on some environments
+    // If user stopped in Phase 2 very early, still compute the subset using the
+    // same attribute-subset/sphere logic as later, but skip interactive LP.
     if (!keep_answer && stop_phase >= 2) {
-        // Record phase and build a minimal output directly from current skyline
         append_phase_record(stop_phase);
-        point_set_t* S_output = alloc_point_set(1);
-        S_output->points[0] = skyline->points[0];
+
+        // Take the skyline of D' and produce a subset of size K
+        point_set_t* skyline_D_prime = skyline_point(D_prime);
+
+        point_set_t* S_output = nullptr;
+        if (K == 1) {
+            // For K=1, use sphere-based approach to select a single representative
+            point_set_t* S = sphereWSImpLP(skyline_D_prime, K);
+            S_output = alloc_point_set(S->numberOfPoints);
+            for (int j = 0; j < S->numberOfPoints; ++j){
+                S_output->points[j] = S->points[j];
+            }
+        } else if (final_d <= d_hat_2) {
+            point_set_t* S = sphereWSImpLP(skyline_D_prime, K);
+            S_output = alloc_point_set(S->numberOfPoints);
+            for (int j = 0; j < S->numberOfPoints; ++j){
+                S_output->points[j] = S->points[j];
+            }
+        } else {
+            S_output = attribute_subset(skyline, S_output, final_d, d_hat_2, K, set_final_dimensions);
+        }
 
         double time_3 = 0.0;
-        auto end_time_3_quick = std::chrono::high_resolution_clock::now();
-        (void)end_time_3_quick; // silence unused var warning
-
         highdim_output* output = new highdim_output;
         output->S = S_output;
         output->final_dimensions = set_final_dimensions;
         output->time_12 = time_12;
         output->time_3 = time_3;
+        // Clean up
+        release_point_set(skyline_D_prime, false);
         release_point_set(D_prime, true);
         return output;
     }
