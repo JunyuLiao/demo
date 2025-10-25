@@ -224,29 +224,9 @@ class AlgorithmRunner:
     
     def get_status(self):
         """Get current status"""
-        # Prepare a copy to avoid races
-        lines = self.output_lines.copy()
-        # When the process has just exited, containers may flush stdout in one
-        # large batch. Trim to the most recent meaningful block so clients that
-        # scan from the top parse the latest prompt/results instead of the first.
-        if not self.is_running and lines:
-            last_idx = -1
-            markers = (
-                "Your choice (0 for not interested):",
-                "Please choose the option you favor more:",
-                "=== FINAL RECOMMENDATION ===",
-                "=== DONE ===",
-                "Phase 3:"
-            )
-            for i in range(len(lines) - 1, -1, -1):
-                if any(m in lines[i] for m in markers):
-                    last_idx = i
-                    break
-            if last_idx > 0:
-                lines = lines[last_idx:]
         return {
             'running': self.is_running,
-            'output': lines
+            'output': self.output_lines
         }
 
 class UHAlgorithmRunner:
