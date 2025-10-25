@@ -283,8 +283,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                                 selected_dimensions_i.insert(*next(selected_dimensions.begin(), left));
                                 while (selected_dimensions_i.size() < d_hat){
                                     // choose a random dimension from selected_dimensions_init, but not in selected_dimensions or final_dimensions
-                                    std::random_device rd;
-                                    std::mt19937 gen(rd());
+                                    static std::mt19937 gen(static_cast<unsigned>(std::chrono::steady_clock::now().time_since_epoch().count()));
                                     std::uniform_int_distribution<int> dis(0, selected_dimensions_init.size()-1);
                                     int idx = dis(gen);
                                     int dim = *next(selected_dimensions_init.begin(), idx);
@@ -332,8 +331,7 @@ highdim_output* interactive_highdim(point_set_t* P_raw, point_set_t* skyline, in
                         }
                         while (selected_dimensions_i.size() < d_hat){
                             // choose a random dimension from selected_dimensions_init, but not in selected_dimensions or final_dimensions
-                            std::random_device rd;
-                            std::mt19937 gen(rd());
+                            static std::mt19937 gen(static_cast<unsigned>(std::chrono::steady_clock::now().time_since_epoch().count()));
                             std::uniform_int_distribution<int> dis(0, selected_dimensions_init.size()-1);
                             int idx = dis(gen);
                             int dim = *next(selected_dimensions_init.begin(), idx);
